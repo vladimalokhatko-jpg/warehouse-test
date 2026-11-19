@@ -184,11 +184,14 @@ export function makeWarehouse(canvas){
   }
   for(const z of [-41.3,-34.0,-26.0,-18.4,-11.7,-4.0,5.80,8.2])
     pedestrianArrows(-29.13,z,"vertical");
-  for(const x of [-23.0,-17.0,-10.0,-3.0,4.0,11.0,18.0])
+  for(const x of [-23.0,-17.0,-10.0,-3.0,4.0,13.1,19.1])
     pedestrianArrows(x,-35.36,"horizontal");
   pedestrianArrows(-25.75,-6.43,"horizontal");
   pedestrianArrows(-26.52,-28.15,"horizontal");
   pedestrianArrows(-24.4,4.35,"horizontal");
+  // A marked crossing where pedestrian traffic passes the chemical-store loading gate.
+  for(const z of [-35.84,-35.58,-35.32,-35.06,-34.84])
+    flat(8.79,z,5.40,.103,y+.034,white);
   for(const z of [0,-7.67,-13.9,-20.9,-29.04])markArrow(24.15,z,0,1.26,ink);
   for(const z of [-4.42,-10.43,-16.86,-25.56,-33.07])
     for(const x of [-20,-9.1,2.65,14.75])markArrow(x,z,-Math.PI/2,.79,ink);
@@ -204,7 +207,7 @@ export function makeWarehouse(canvas){
   for(const [a,b] of [[-.75,-5.72],[-7.09,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
     rail(-27.76,a,-27.76,b,floor,.87);
   // Protective rails run parallel to the rear walkway, never across its width.
-  for(const [x0,x1] of [[-23.3,-18.0],[-13.8,-8.5],[-2.2,3.0],[8.3,13.8]])
+  for(const [x0,x1] of [[-23.3,-18.0],[-13.8,-8.5],[-2.2,3.0],[14.2,18.7]])
     rail(x0,-34.69,x1,-34.69,floor,.74);
   for(const [x,z] of [[21.70,-16.15],[-12.08,-17.82],[21.65,-30.89],[-26.72,-31.4],[-4.32,-35.78],[27.01,-28.01]]){
     box(scene,x,floor+1.66,z,.134,3.30,.145,C.steel);
