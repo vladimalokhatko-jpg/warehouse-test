@@ -30,7 +30,7 @@ export function fitWarehouse(view,aspect){
     return distanceToCorner+Math.max(Math.abs(projectedWidth)/horizontal,Math.abs(projectedHeight)/vertical);
   }));
 }
-export const routeColors={walk:"#49a58d",lift:"#d5a352"};
+export const routeColors={walk:"#309b62",lift:"#d5a352"};
 export const receiving={
   office:[-30.65,-21.55,-.68,3.61],
   entrance:[-30.55,-27.24,8.82,10.32],

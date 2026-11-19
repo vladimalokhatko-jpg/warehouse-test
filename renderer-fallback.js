@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {receiving} from "./layout.js?v=10";
+import {receiving} from "./layout.js?v=11";
 
 const light = new THREE.Vector3(-.52,.79,.34).normalize();
 const vertex = new THREE.Vector3();

@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=10";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=11";
 import {modelTools,buildProps,colors as C} from "./models.js";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=10";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=11";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -11,7 +11,7 @@ export function makeWarehouse(canvas){
   const {left,right,front,back}=shell;
   const labels={4:"УПОРЫ",5:"ЗАРЯДНАЯ",6:"ПОГРУЗЧИК",7:"ШТАБЕЛЁР",8:"РОХЛИ",10:"РАЗГРУЗКА",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
   const ink="#334a52", concrete="#c5ceca", normalFloor="#bcc6c4", white="#f7f0dd";
-  const lane="#d7ae62", path="#83b4a6", deck="#aab9b8", wall="#a9bdbe";
+  const lane="#d7ae62", path="#55ae79", deck="#aab9b8", wall="#a9bdbe";
   const y=floor+.01;
   const basic=(color,opacity=1)=>new THREE.MeshBasicMaterial({color,transparent:opacity!==1,opacity,depthWrite:opacity===1,toneMapped:false});
   function boundsBox(bounds){
@@ -131,8 +131,14 @@ export function makeWarehouse(canvas){
   // Distinct pedestrian and vehicle routes, with marked crossings.
   const pathSpans=[
     ...receiving.pedestrian.map(boundsBox),
-    [-25.75,-6.43,4.95,1.30],[-25.43,-28.27,3.1,1.24],
-    [-26.00,-34.46,4.18,1.30],[-11.40,-34.96,24.6,1.18],[17.66,-34.96,30.2,1.18],
+    [-25.75,-6.43,4.95,1.30],
+    // The parking-area spur must overlap the main pedestrian corridor.
+    [-26.40,-28.27,5.05,1.24],
+    [-26.00,-34.46,4.18,1.30],
+    // Uninterrupted cross-warehouse walkway; keep the existing dispatch zebra crossing.
+    [4.52,-34.96,56.48,1.18],
+    // Short connection to the chemical room's personnel door, not its loading gate.
+    [21.51,-35.69,1.04,.58],
     [-29.13,13.2,2.44,6.0],
   ];
   const liftSpans=[
@@ -142,7 +148,7 @@ export function makeWarehouse(canvas){
     [8.75,-36.2,5.23,3.46],boundsBox(dispatch.dockApproach),
     [25.90,7.22,4.60,2.88],boundsBox(charging.aisle),
   ];
-  const routeLights={walk:basic(routeColors.walk,.46),lift:basic(routeColors.lift,.38)};
+  const routeLights={walk:basic(routeColors.walk,.78),lift:basic(routeColors.lift,.38)};
   for(const [kind,parts] of [["lift",liftSpans],["walk",pathSpans]]){
     const pedestrian=kind==="walk";
     for(const [cx,cz,w,d] of parts){
@@ -151,8 +157,24 @@ export function makeWarehouse(canvas){
       if(pedestrian)outline(cx,cz,w,d,y+.019,white,.052);
     }
   }
-  for(const z of [-31.50,-30.60,-21,-16.1,-10.1,-4.25,4.85,7.25,11.7,14.25])markArrow(-29.13,z,0,.87);
-  for(const x of [-21.0,-13.7,-5.6,3.0,15.9,22.7])markArrow(x,-34.96,-Math.PI/2,.75);
+  // Two-way pedestrian arrows. Both arrows sit inside the green corridor;
+  // vehicle arrows below stay independent. No floor arrows inside the office or on stairs.
+  function pedestrianArrows(x,z,direction){
+    const offset=.24,arrowLength=.64;
+    if(direction==="vertical"){
+      markArrow(x-offset,z,0,arrowLength,white,y+.042);      // toward the rear exit (-z)
+      markArrow(x+offset,z,Math.PI,arrowLength,white,y+.042); // toward receiving (+z)
+    }else{
+      markArrow(x,z-offset,-Math.PI/2,arrowLength,white,y+.042); // right (+x)
+      markArrow(x,z+offset,Math.PI/2,arrowLength,white,y+.042);  // left (-x)
+    }
+  }
+  for(const z of [-40.0,-33.65,-26.1,-18.4,-11.7,-4.25,5.80,8.2])
+    pedestrianArrows(-29.13,z,"vertical");
+  for(const x of [-21.0,-13.7,-6.0,1.5,8.7,15.9,22.7,29.1])
+    pedestrianArrows(x,-34.96,"horizontal");
+  for(const [x,z] of [[-25.75,-6.43],[-25.43,-28.27]])
+    pedestrianArrows(x,z,"horizontal");
   for(const z of [0,-7.67,-13.9,-20.9,-29.04])markArrow(24.15,z,0,1.26,ink);
   for(const z of [-4.42,-10.43,-16.86,-25.56,-33.07])
     for(const x of [-20,-9.1,2.65,14.75])markArrow(x,z,-Math.PI/2,.79,ink);
