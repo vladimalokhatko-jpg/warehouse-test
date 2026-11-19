@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=11";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=12";
 import {modelTools,buildProps,colors as C} from "./models.js";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=11";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=12";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -129,17 +129,13 @@ export function makeWarehouse(canvas){
   }
 
   // Distinct pedestrian and vehicle routes, with marked crossings.
+  // Walking strips meet flush at every T junction and stop at the chemical personnel door.
   const pathSpans=[
     ...receiving.pedestrian.map(boundsBox),
-    [-25.75,-6.43,4.95,1.30],
-    // The parking-area spur must overlap the main pedestrian corridor.
-    [-26.40,-28.27,5.05,1.24],
-    [-26.00,-34.46,4.18,1.30],
-    // Uninterrupted cross-warehouse walkway; keep the existing dispatch zebra crossing.
-    [4.52,-34.96,56.48,1.18],
-    // Short connection to the chemical room's personnel door, not its loading gate.
-    [21.51,-35.69,1.04,.58],
-    [-29.13,13.2,2.44,6.0],
+    [-25.75,-6.43,4.95,1.30],      // quality-inspection approach
+    [-26.52,-28.15,3.35,1.14],     // parking-zone access without entering parking bays
+    [-4.18,-35.36,52.34,1.12],    // cross-warehouse route, clear of forklift lane
+    [-29.13,13.2,2.44,6.0],       // entrance stair approach
   ];
   const liftSpans=[
     [5.56,4.76,40.5,2.48],[dockOne,6.50,3.75,5.84],[dockTwo,6.50,3.75,5.84],
@@ -148,19 +144,36 @@ export function makeWarehouse(canvas){
     [8.75,-36.2,5.23,3.46],boundsBox(dispatch.dockApproach),
     [25.90,7.22,4.60,2.88],boundsBox(charging.aisle),
   ];
-  const routeLights={walk:basic(routeColors.walk,.78),lift:basic(routeColors.lift,.38)};
-  for(const [kind,parts] of [["lift",liftSpans],["walk",pathSpans]]){
-    const pedestrian=kind==="walk";
-    for(const [cx,cz,w,d] of parts){
-      flat(cx,cz,w,d,y+.003,pedestrian?path:normalFloor);
-      flat(cx,cz,w-.07,d-.07,y+.014,routeLights[kind]);
-      if(pedestrian)outline(cx,cz,w,d,y+.019,white,.052);
+  // All green floor rectangles are merged into non-overlapping horizontal tiles.
+  // This avoids white bounding boxes and dark overlaps where paths meet.
+  const trafficOverlay=basic(routeColors.lift,.38);
+  for(const [cx,cz,w,d] of liftSpans){
+    flat(cx,cz,w,d,y+.003,normalFloor);
+    flat(cx,cz,w-.07,d-.07,y+.014,trafficOverlay);
+  }
+  const walkRects=pathSpans.map(([x,z,w,d])=>({
+    x0:x-w/2,x1:x+w/2,z0:z-d/2,z1:z+d/2
+  }));
+  const xCuts=[...new Set(walkRects.flatMap(r=>[r.x0,r.x1]))].sort((a,b)=>a-b);
+  const greenFloor=basic(routeColors.walk);
+  for(let j=0;j<xCuts.length-1;j++){
+    const x0=xCuts[j],x1=xCuts[j+1],mid=(x0+x1)/2;
+    if(x1-x0<.0001)continue;
+    const intervals=walkRects.filter(r=>r.x0<mid&&r.x1>mid)
+      .map(r=>[r.z0,r.z1]).sort((a,b)=>a[0]-b[0]);
+    const merged=[];
+    for(const [a,b] of intervals){
+      const last=merged[merged.length-1];
+      if(last&&a<=last[1]+.00001)last[1]=Math.max(last[1],b);
+      else merged.push([a,b]);
     }
+    for(const [z0,z1] of merged)
+      flat(mid,(z0+z1)/2,x1-x0,z1-z0,y+.026,greenFloor);
   }
   // Two-way pedestrian arrows. Both arrows sit inside the green corridor;
   // vehicle arrows below stay independent. No floor arrows inside the office or on stairs.
   function pedestrianArrows(x,z,direction){
-    const offset=.24,arrowLength=.64;
+    const offset=.28,arrowLength=.78;
     if(direction==="vertical"){
       markArrow(x-offset,z,0,arrowLength,white,y+.042);      // toward the rear exit (-z)
       markArrow(x+offset,z,Math.PI,arrowLength,white,y+.042); // toward receiving (+z)
@@ -169,34 +182,30 @@ export function makeWarehouse(canvas){
       markArrow(x,z+offset,Math.PI/2,arrowLength,white,y+.042);  // left (-x)
     }
   }
-  for(const z of [-40.0,-33.65,-26.1,-18.4,-11.7,-4.25,5.80,8.2])
+  for(const z of [-41.3,-34.0,-26.0,-18.4,-11.7,-4.0,5.80,8.2])
     pedestrianArrows(-29.13,z,"vertical");
-  for(const x of [-21.0,-13.7,-6.0,1.5,8.7,15.9,22.7,29.1])
-    pedestrianArrows(x,-34.96,"horizontal");
-  for(const [x,z] of [[-25.75,-6.43],[-25.43,-28.27]])
-    pedestrianArrows(x,z,"horizontal");
+  for(const x of [-23.0,-17.0,-10.0,-3.0,4.0,11.0,18.0])
+    pedestrianArrows(x,-35.36,"horizontal");
+  pedestrianArrows(-25.75,-6.43,"horizontal");
+  pedestrianArrows(-26.52,-28.15,"horizontal");
+  pedestrianArrows(-24.4,4.35,"horizontal");
   for(const z of [0,-7.67,-13.9,-20.9,-29.04])markArrow(24.15,z,0,1.26,ink);
   for(const z of [-4.42,-10.43,-16.86,-25.56,-33.07])
     for(const x of [-20,-9.1,2.65,14.75])markArrow(x,z,-Math.PI/2,.79,ink);
   for(const x of [-7.89,0,9.24,15.85])markArrow(x,4.90,-Math.PI/2,.86,ink);
   for(const x of [21.93,26.37])brokenLine(x,-12.50,.067,38.5,y+.018,lane);
   for(const z of [-17.95,-15.70,-26.68,-24.40,-31.53])brokenLine(-1.0,z,48,.052,y+.018,lane);
-  for(const [x,z,side] of [[-26.58,-33.0,"vertical"],[24.18,-35.02,"horizontal"]]){
-    if(side==="vertical"){
-      for(let i=0;i<6;i++)flat(x,z-1.03+i*.405,1.42,.17,y+.029,white);
-      flat(x+1.4,z,.08,2.87,y+.027,white);
-    }else{
-      for(let i=0;i<8;i++)flat(x-1.65+i*.47,z,.21,1.02,y+.030,white);
-      flat(x,z+1.03,3.87,.074,y+.028,white);
-    }
-  }
+  // Remove two obsolete zebras and their orphaned white limit lines.
+  // Crossings will be added only where an actual pedestrian/vehicle junction needs one.
   rail(-27.85,9.94,-27.85,5.04,floor,.87);
   rail(-27.85,5.04,-21.57,5.04,floor,.87);
   rail(-21.57,3.63,-21.57,5.04,floor,.87);
-  for(const [a,b] of [[-.75,-5.72],[-7.09,-26.95],[-29.36,-31.39],[-34.56,-43.35]])rail(-27.76,a,-27.76,b,floor,.87);
-  for(const x of [-25.9,-15.2,1.1,14.8])rail(x,-35.65,x+2.54,-35.65,floor,.75);
-  groundText(-29.12,-21.14,9.7,.51,"ПЕШЕХОДНЫЙ ПРОХОД",ink,y+.05,Math.PI/2);
-  groundText(24.15,-19.05,5.3,.57,"ПРОЕЗД ТЕХНИКИ",ink,y+.05,Math.PI/2);
+  // Guardrail openings match pedestrian access points at OTK, parking and rear route.
+  for(const [a,b] of [[-.75,-5.72],[-7.09,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
+    rail(-27.76,a,-27.76,b,floor,.87);
+  // Protective rails run parallel to the rear walkway, never across its width.
+  for(const [x0,x1] of [[-23.3,-18.0],[-13.8,-8.5],[-2.2,3.0],[8.3,13.8]])
+    rail(x0,-34.69,x1,-34.69,floor,.74);
   for(const [x,z] of [[21.70,-16.15],[-12.08,-17.82],[21.65,-30.89],[-26.72,-31.4],[-4.32,-35.78],[27.01,-28.01]]){
     box(scene,x,floor+1.66,z,.134,3.30,.145,C.steel);
     post(x-.21,floor,z+.09,.84);post(x+.21,floor,z+.09,.84);
@@ -275,8 +284,10 @@ export function makeWarehouse(canvas){
     for(const yy of [-.13,-.265])box(vest,0,yy,.047,.477,.054,.017,"#e6edda");
     box(vest,0,-.029,.041,.018,.61,.014,C.steel);
   }
-  const entranceFire=group(scene,-30.64,floor,4.24);
-  entranceFire.rotation.y=Math.PI/2;
+  // Shared wall-mounted extinguisher with accessible sign.
+  function fireExtinguisher(x,z,heading){
+  const entranceFire=group(scene,x,floor,z);
+  entranceFire.rotation.y=heading;
   round(entranceFire,0,1.13,0,.41,1.55,.055,.027,"#a9bdb8");
   box(entranceFire,0,.59,.092,.24,.054,.25,C.steel);
   cyl(entranceFire,0,.95,.187,.118,.65,"#bb4136");
@@ -295,6 +306,8 @@ export function makeWarehouse(canvas){
     ctx.strokeStyle="#fff7e6";ctx.lineWidth=w*.044;
     ctx.beginPath();ctx.moveTo(w*.67,h*.29);ctx.lineTo(w*.79,h*.37);ctx.lineTo(w*.79,h*.62);ctx.stroke();
   });
+
+  }
   doorway(-29.13,-43.72,Math.PI,"ВЫХОД");
   sign(-25.79,floor+.76,3.80,2.94,.34,"RECEIVING OFFICE");
   const office=table(-26.04,floor,2.54,3.30,1.02);
@@ -604,16 +617,22 @@ export function makeWarehouse(canvas){
   for(const x of [24.78,25.74,26.70])for(const v of [1.24,.91,.61])box(scene,x,floor+v,-42.10,.77,.045,.031,"#b7a07e");
   sign(24.90,floor+1.52,-35.82,2.48,.34,"МАРКИРОВКА ПО SDS",ink,"#ead8af");
 
-  // Safety landmarks and directional cues are physical scene elements.
-  function safetyStation(x,z){
-    const pole=group(scene,x,floor,z);
-    cyl(pole,0,.44,0,.094,.70,C.red);cyl(pole,0,.823,0,.062,.082,C.red);
-    box(pole,0,.887,0,.144,.042,.08,C.dark);
-    box(pole,.118,.668,.034,.038,.29,.041,C.dark);
-    sign(x,floor+1.35,z-.20,.47,.28,"ОТ",white,C.red);
-  }
-  for(const [x,z] of [[-27.32,-23.84],[21.32,-31.17],[24.50,-36.74]])safetyStation(x,z);
-  for(const [x,z] of [[-27.49,-12.16],[-26.56,-33.15],[23.7,-34.57]])post(x,floor,z,.77,.073);
+  // Concept positions for fire safety equipment, to be verified against the real
+  // fire-risk assessment and extinguisher class/distance requirements.
+  for(const [x,z,heading] of [
+    [-30.64,4.24,Math.PI/2],     // entrance
+    [-30.64,-12.10,Math.PI/2],   // inspection
+    [-30.64,-25.10,Math.PI/2],   // mezzanine / racks
+    [-30.64,-41.45,Math.PI/2],   // emergency exit
+    [27.56,-19.50,-Math.PI/2],  // right-hand vehicle corridor
+    [27.55,-38.25,-Math.PI/2],  // chemical-store interior
+    [19.35,-35.68,0],          // chemical-room pedestrian door
+    [37.94,1.21,-Math.PI/2],   // charging bay
+  ])fireExtinguisher(x,z,heading);
+  // One slim support for the charging station (no wall available there).
+  box(scene,38.02,floor+1.02,1.21,.07,2.04,.07,C.steel);
+  box(scene,38.02,floor+.025,1.21,.37,.05,.37,C.steel);
+  post(-27.49,floor,-12.16,.77,.073);
   box(scene,-28.76,floor+1.22,-9.6,.41,.27,.15,"#e8ead7");
   sign(-28.76,floor+1.26,-9.49,.37,.23,"+", "#41755d","#ededdb");
   person(-29.22,floor,-3.18,"#74a495");
