@@ -105,16 +105,59 @@ export function buildProps(tools, scene){
     box(g,0,.99,-.55,.31,.28,.08,C.dark);
     const steer=cyl(g,.03,.96,.20,.16,.035,C.dark);steer.rotation.x=.45;
     box(g,0,1.17,.615,.86,.062,.105,C.steel);
+    // More recognizable counterweight, engine lid and operator compartment.
+    round(g,0,.52,-1.01,1.18,.50,.54,.16,"#e3a43e");
+    round(g,0,.82,-.96,.92,.14,.47,.055,C.yellow);
+    round(g,0,.85,-.42,.65,.16,.49,.04,C.dark); // seat cushion
+    round(g,0,1.11,-.63,.58,.52,.11,.05,C.navy); // backrest
+    box(g,0,.81,.18,.83,.07,.37,C.steel);         // floor plate
+    for(const xx of [-.48,.48]){
+      box(g,xx,1.16,.07,.045,.83,.050,C.steel); // cab side support
+      box(g,xx,1.28,.63,.055,.48,.055,C.steel); // front guard
+      cyl(g,xx,.93,1.04,.065,.10,C.cream);       // headlight
+      box(g,xx*.9,.75,-1.28,.19,.095,.055,C.red); // tail lamp
+      box(g,xx*.74,.52,1.13,.063,.89,.07,C.navy); // mast lift guide
+    }
+    box(g,0,.73,1.16,.78,.062,.08,C.steel); // load backrest rail
+    box(g,0,1.08,.65,1.06,.05,.065,C.ice);  // roof-side reinforcement
     return g;
   }
   function trolley(x,y,z,powered){
     const g=group(scene,x,y,z);
-    const color=powered?"#619485":C.orange;
-    round(g,0,.21,-.22,.53,.32,.61,.05,color);
-    for(const xx of [-.18,.18])box(g,xx,.076,.55,.13,.067,1.23,color);
-    const handle=box(g,0,.56,-.48,.062,.81,.066,C.steel);handle.rotation.x=-.23;
-    box(g,0,.929,-.559,.31,.056,.08,C.dark);
-    for(const xx of [-.20,.20])wheel(g,xx,.09,-.3,.093,.075);
+    const color=powered?"#598f85":"#d88743";
+    // Two low, long fork blades with distinct rounded toes and tandem rollers.
+    round(g,0,.245,-.24,.59,.37,.65,.11,color);
+    round(g,0,.40,-.32,.43,.16,.44,.07,C.steel);
+    for(const xx of [-.235,.235]){
+      round(g,xx,.113,.59,.145,.11,1.42,.034,color);
+      round(g,xx,.105,1.29,.14,.06,.17,.023,C.steel);
+      wheel(g,xx,.085,1.14,.076,.072);
+      box(g,xx,.165,-.06,.165,.10,.32,C.steel);
+    }
+    // Exposed pump cylinder, steering linkage and castor wheels.
+    cyl(g,0,.45,-.29,.102,.32,"#a7afb0");
+    cyl(g,0,.63,-.29,.044,.14,C.steel);
+    round(g,0,.30,-.52,.42,.17,.22,.04,C.dark);
+    for(const xx of [-.27,.27]){
+      wheel(g,xx,.134,-.53,.132,.08);
+    }
+    // Tilted ergonomic tiller with a transverse rubberized hand grip.
+    const stem=box(g,0,.84,-.68,.066,.93,.073,C.steel);
+    stem.rotation.x=-.31;
+    round(g,0,1.31,-.83,.53,.092,.12,.045,C.dark);
+    for(const xx of [-.21,.21])
+      round(g,xx,1.28,-.80,.09,.09,.14,.022,C.dark);
+    if(powered){
+      // Compact electric stacker, not merely a colored hand pallet truck.
+      round(g,0,.47,-.60,.56,.44,.48,.09,"#47796e");
+      for(const xx of [-.26,.26]){
+        box(g,xx,1.15,-.55,.075,1.75,.088,C.steel);
+      }
+      box(g,0,1.96,-.55,.63,.065,.12,C.navy);
+      box(g,0,.94,-.52,.55,.09,.13,C.yellow);
+      box(g,0,.56,-.82,.32,.30,.29,C.dark);
+      cyl(g,.18,.87,-.88,.057,.05,C.orange);
+    }
     return g;
   }
   function truck(x,z,{open=false,color="#617d85",heading=0}={}){
@@ -166,9 +209,27 @@ export function buildProps(tools, scene){
   }
   function table(x,y,z,w=2.65,d=1.2){
     const t=group(scene,x,y,z);
-    for(const xx of [-w*.42,w*.42])for(const zz of [-d*.39,d*.39])box(t,xx,.48,zz,.075,.94,.075,C.steel);
-    round(t,0,.99,0,w,.13,d,.032,C.cream);
-    box(t,0,.34,-.35,w*.86,.09,.075,C.steel);
+    const frame="#617477",top="#e4dccb",trim="#a7a9a1";
+    const legs=w>4.7?[-w*.43,0,w*.43]:[-w*.43,w*.43];
+    for(const xx of legs)for(const zz of [-d*.39,d*.39]){
+      box(t,xx,.48,zz,.075,.94,.077,frame);
+      box(t,xx,.04,zz,.13,.07,.13,C.dark); // adjustable foot
+    }
+    // Realistic workbench with a separate worktop, front edge band and subframe.
+    round(t,0,.984,0,w,.11,d,.035,top);
+    box(t,0,.928,d*.47,w-.09,.042,.045,trim);
+    box(t,0,.928,-d*.47,w-.09,.042,.045,trim);
+    for(const zz of [-d*.36,d*.36])
+      box(t,0,.80,zz,w*.85,.075,.058,frame);
+    for(const xx of [-w*.42,w*.42])
+      box(t,xx,.79,0,.055,.07,d*.78,frame);
+    box(t,0,.29,-d*.12,w*.81,.050,d*.60,"#9aa8a6"); // lower shelf
+    for(const xx of legs)
+      box(t,xx,.26,-d*.14,.055,.42,.050,frame);
+    if(w>2.7){
+      round(t,w*.26,.777,d*.38,Math.min(.62,w*.21),.22,.20,.026,"#c6c9c3");
+      box(t,w*.26,.78,d*.492,.20,.027,.018,C.steel); // drawer pull
+    }
     return t;
   }
   function computer(p,x,z){
