@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=16";
-import {modelTools,buildProps,colors as C} from "./models.js?v=16";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=16";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=17";
+import {modelTools,buildProps,colors as C} from "./models.js?v=17";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=17";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -9,7 +9,7 @@ export function makeWarehouse(canvas){
   const {box,round,cyl,group,label,graphic,flat}=tools;
   const {post,rail,pallet,forklift,reachTruck,trolley,person,table,computer,printer,lamp}=buildProps(tools,scene);
   const {left,right,front,back}=shell;
-  const labels={4:"УПОРЫ",5:"ЗАРЯДНАЯ",6:"ПОГРУЗЧИК",7:"ШТАБЕЛЁР",8:"РОХЛИ",10:"РАЗГРУЗКА",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
+  const labels={4:"УПОРЫ",5:"ЗАРЯДНАЯ",6:"ПОГРУЗЧИК",7:"ШТАБЕЛЁР",8:"РОХЛИ",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
   const ink="#334a52", concrete="#c5ceca", normalFloor="#bcc6c4", white="#f7f0dd";
   const lane="#d7ae62", path="#55ae79", deck="#aab9b8", wall="#a9bdbe";
   const y=floor+.01;
@@ -177,7 +177,8 @@ export function makeWarehouse(canvas){
     [-29.13,13.20,2.44,6.0],          // exterior entrance to walkway
   ];
   const liftSpans=[
-    [5.56,4.76,40.5,2.48],[dockOne,6.50,3.75,5.84],[dockTwo,6.50,3.75,5.84],
+    // The former D01-D06 blue unloading buffer is now one clear drive-only aisle.
+    [2.15,3.38,47.70,4.32],[dockOne,6.50,3.75,5.84],[dockTwo,6.50,3.75,5.84],
     [24.14,-12.50,4.50,38.50],[-.94,-4.45,49.6,1.90],[-.89,-10.41,49.5,1.62],
     [-.92,-16.84,49.5,2.30],[-.89,-25.55,49.5,2.29],[-.92,-33.04,49.5,3.03],
     [8.75,-36.2,5.23,3.46],boundsBox(dispatch.dockApproach),
@@ -217,11 +218,14 @@ export function makeWarehouse(canvas){
 
   // Aisles (horizontal): evenly spaced, sparse, centerline floor icons.
   for(const z of [-4.45,-10.41,-16.84,-25.55,-33.04])
-    for(const x of [-18,-7,5,16])
-      floorSymbol("forklift",x,z,1.25,Math.PI/2);
+    for(const x of [-18,-2,16])
+      floorSymbol("forklift",x,z,1.13,Math.PI/2);
   // Longitudinal truck lane to the right of the racking.
-  for(const z of [-28.5,-21.0,-13.8,-6.3,1.1])
-    floorSymbol("forklift",24.14,z,1.22);
+  for(const z of [-28.5,-20.8,-13.2,-5.6,1.0])
+    floorSymbol("forklift",24.14,z,1.16);
+  // Icons above the two receiving docks mark movement, never storage positions.
+  for(const x of [-15.2,-3.6,8.5])
+    floorSymbol("forklift",x,3.28,1.10,Math.PI/2);
   floorSymbol("forklift",31.1,7.3,1.05,Math.PI/2);
 
   // One zebra where the personnel corridor crosses the chemical loading path.
@@ -256,7 +260,7 @@ export function makeWarehouse(canvas){
   // Numbered zone floors.
   for(const zone of zones){
     const [x,z,w,d]=boundsBox(zone.bounds);
-    if(![1,2,5,9].includes(zone.id)){
+    if(![1,2,5,9,10].includes(zone.id)){
       flat(x,z,w,d,y+.012,basic(zone.color));
       outline(x,z,w,d,y+.018,zone.id===11?"#849a91":white,.055);
       const title=labels[zone.id];
@@ -463,8 +467,7 @@ export function makeWarehouse(canvas){
     outline(x,7.60,1.28,2.50,y+.023,white,.047);
     trolley(x,floor,7.92,false).rotation.y=Math.PI;
   }
-  bays(-3.80,2.42,6,3.90,1.74,"D");
-  pallet(-9.65,floor,2.42,1);pallet(2.05,floor,2.42,3);
+  // No D01-D06 bays, pallets or storage markings in the receiving drive aisle.
   // Side charging room and equipment.
   wallStrip(38.37,5.15,.18,9.53,1.02);
   wallStrip(33.09,.66,10.62,.185,1.04);
