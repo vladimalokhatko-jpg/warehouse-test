@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=19";
-import {modelTools,buildProps,colors as C} from "./models.js?v=19";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=19";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=20";
+import {modelTools,buildProps,colors as C} from "./models.js?v=20";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=20";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -9,7 +9,7 @@ export function makeWarehouse(canvas){
   const {box,round,cyl,group,label,graphic,flat}=tools;
   const {post,rail,pallet,forklift,reachTruck,trolley,person,table,computer,printer,lamp}=buildProps(tools,scene);
   const {left,right,front,back}=shell;
-  const labels={5:"ЗАРЯДНАЯ",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
+  const labels={5:"ЗАРЯДНАЯ",11:"ПРИЁМКА / RECEIVING",12:"ИНСПЕКЦИЯ / INSPECTION",13:"К РАЗМЕЩЕНИЮ / PUTAWAY",14:"КАРАНТИН / HOLD",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
   const ink="#334a52", concrete="#c5ceca", normalFloor="#bcc6c4", white="#f7f0dd";
   const lane="#d7ae62", path="#55ae79", deck="#aab9b8", wall="#a9bdbe";
   const y=floor+.01;
@@ -259,14 +259,16 @@ export function makeWarehouse(canvas){
   cyl(mirror,0,2.32,.132,.195,.04,"#9bc2c6").rotation.x=Math.PI/2;
   sign(22.0,floor+1.48,-15.75,.43,.36,"5",ink,white);
 
-  // Numbered zone floors.
+  // Functional, public-domain warehouse descriptions with neutral floor colours.
+  const genericInbound=new Set([11,12,13,14]);
   for(const zone of zones){
     const [x,z,w,d]=boundsBox(zone.bounds);
     if(![1,2,3,4,5,9,10].includes(zone.id)){
-      flat(x,z,w,d,y+.012,basic(zone.color));
-      outline(x,z,w,d,y+.018,zone.id===11?"#849a91":white,.055);
+      const neutral=genericInbound.has(zone.id);
+      flat(x,z,w,d,y+.012,basic(zone.color,neutral ? .79 : 1));
+      outline(x,z,w,d,y+.018,neutral ? "#829694" : white,neutral ? .050 : .055);
       const title=labels[zone.id];
-      if(title)groundText(x,z+d/2-.25,Math.min(w*.92,title.length*.268),.36,title,ink,y+.050);
+      if(title)groundText(x,z+d/2-.25,Math.min(w*.92,title.length*.268),.36,title,neutral ? "#3c5553" : ink,y+.050);
     }
   }
   // Entrance, receiving office and numbered dock bays.
@@ -569,7 +571,7 @@ export function makeWarehouse(canvas){
   }
   brokenLine(33.08,6.20,9.46,.07,y+.021,lane);
   // Charging-bay access is identified by equipment icons, not road arrows.
-  // White / yellow / green / red custody areas.
+  // Generic inbound functions: receiving, inspection, putaway staging, quarantine.
   // Move reception desk east of the team briefing area.
   const reception=table(-20.35,floor,-2.38,3.84,1.13);
   computer(reception,-.83,-.26);
@@ -588,23 +590,29 @@ export function makeWarehouse(canvas){
   computer(inspector,-.90,-.27);lamp(inspector,1.35,-.24);
   box(inspector,.47,1.073,.21,.62,.035,.29,C.gray);
   for(const xx of [.29,.52,.73])box(inspector,xx,1.107,.20,.082,.057,.21,C.steel);
-  sign(-23.40,floor+1.26,-6.79,1.23,.29,"СТОЛ ОТК");
+  sign(-23.40,floor+1.26,-6.79,2.06,.29,"СТОЛ ИНСПЕКЦИИ");
   const cabinet=round(scene,-18.92,floor+.80,-8.00,1.72,1.56,.72,.058,C.steel);
   cabinet.userData.canvasLayer=3;
   for(const xx of [-19.32,-18.52])box(scene,xx,floor+.82,-7.61,.71,1.35,.045,"#abbcb8");
   sign(-18.92,floor+1.48,-7.56,1.31,.20,"ИНСТРУМЕНТЫ",white,C.navy);
   rail(-26.1,-9.26,-18.18,-9.26,floor,.84);
-  for(const [x,z,count,spacing,code] of [[9.91,-1.47,6,2.92,"W"],[4.23,-7.58,7,2.86,"Y"],[-15.53,-13.49,6,2.89,"G"],[7.72,-13.52,6,3.31,"R"]]){
+  // Fictional area identifiers, not a standard or company-internal slot code.
+  for(const [x,z,count,spacing,code] of [
+    [9.91,-1.47,5,3.20,"IN-"],
+    [-8.80,-7.58,6,2.86,"QC-"],
+    [-15.53,-13.49,5,3.20,"ST-"],
+    [8.00,-13.52,4,4.15,"H-"]
+  ]){
     bays(x,z,count,spacing,2.30,code);
     for(let i=0;i<count;i++)if((i+count)%3===0)pallet(x+(i-(count-1)/2)*spacing,floor,z,i%4);
   }
   for(const [a,b] of [
     [[-3.85,-15.45],[19.95,-15.45]],[[-3.85,-15.45],[-3.85,-11.54]],[[19.95,-15.45],[19.95,-11.54]],
     [[-3.85,-11.54],[5.45,-11.54]],[[8.1,-11.54],[19.95,-11.54]],
-  ])fence(...a,...b);
-  fence(5.64,-11.56,6.72,-11.56,C.yellow);
-  fence(6.88,-11.56,8.02,-11.56,C.yellow);
-  sign(7.02,floor+1.26,-11.44,2.73,.38,"КАРАНТИН",white,"#a75d50");
+  ])fence(...a,...b,C.steel);
+  fence(5.64,-11.56,6.72,-11.56,C.steel);
+  fence(6.88,-11.56,8.02,-11.56,C.steel);
+  sign(7.02,floor+1.26,-11.44,3.08,.38,"QUARANTINE / HOLD",white,C.navy);
   post(5.55,floor,-11.45,.88,.073);post(8.02,floor,-11.45,.88,.073);
   // Main storage. Two groups of racks, plus a two-level mezzanine and a cantilever.
   function rack(x,z,w,d,title,kind="standard"){
