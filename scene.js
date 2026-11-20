@@ -1,13 +1,13 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=15";
-import {modelTools,buildProps,colors as C} from "./models.js?v=15";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=15";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=16";
+import {modelTools,buildProps,colors as C} from "./models.js?v=16";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=16";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
   const tools=modelTools(scene);
   const {box,round,cyl,group,label,graphic,flat}=tools;
-  const {post,rail,pallet,forklift,trolley,person,table,computer,printer,lamp}=buildProps(tools,scene);
+  const {post,rail,pallet,forklift,reachTruck,trolley,person,table,computer,printer,lamp}=buildProps(tools,scene);
   const {left,right,front,back}=shell;
   const labels={4:"УПОРЫ",5:"ЗАРЯДНАЯ",6:"ПОГРУЗЧИК",7:"ШТАБЕЛЁР",8:"РОХЛИ",10:"РАЗГРУЗКА",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
   const ink="#334a52", concrete="#c5ceca", normalFloor="#bcc6c4", white="#f7f0dd";
@@ -455,9 +455,9 @@ export function makeWarehouse(canvas){
     box(chock,0,.22,.296,.24,.075,.096,C.steel);
   }
   forklift(receiving.truckFork,floor,7.52,Math.PI);
-  const stacker=trolley(receiving.stacker,floor,7.51,true);stacker.rotation.y=Math.PI;
-  for(const xx of [-.29,.29])box(stacker,xx,1.06,.22,.074,1.91,.10,C.steel);
-  box(stacker,0,1.98,.22,.63,.055,.093,C.steel);
+  // Seated narrow-aisle reach truck, matching the supplied photo.
+  const stacker=reachTruck(receiving.stacker,floor,7.51,0);
+  stacker.scale.setScalar(.90); // parked inside the original receiving footprint
   // Two manual pallet trucks: retained as compact procedural models.
   for(const x of [-22.06,-20.05]){
     outline(x,7.60,1.28,2.50,y+.023,white,.047);
@@ -611,8 +611,8 @@ export function makeWarehouse(canvas){
   doorway(27.86,-25.68,Math.PI/2,"ОТГРУЗКА",{w:1.19});
   for(const z of [-31.88,-26.39])post(26.89,floor,z,1.04);
   forklift(-23.54,floor,-28.75,Math.PI);
-  const parked=trolley(-21.03,floor,-28.64,true);
-  for(const xx of [-.30,.30])box(parked,xx,.97,.16,.070,1.84,.081,C.steel);
+  const parked=reachTruck(-21.03,floor,-28.64,0);
+  parked.scale.setScalar(.82); // fits the existing marked parking bay
   for(const x of [-18.95,-17.02])trolley(x,floor,-28.74,false);
   for(const x of [-23.54,-21.03,-18.95,-17.02,-14.62,-12.94])outline(x,-28.91,1.49,2.92,y+.025,white,.051);
   for(let i=0;i<5;i++)box(scene,-14.63,floor+.18*(i+1),-28.29-i*.28,.89,.085,.30,C.yellow);

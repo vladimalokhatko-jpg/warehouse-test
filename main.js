@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import {floor,presets,fitWarehouse} from "./layout.js?v=15";
-import {makeWarehouse} from "./scene.js?v=15";
+import {floor,presets,fitWarehouse} from "./layout.js?v=16";
+import {makeWarehouse} from "./scene.js?v=16";
 
 const byId=id=>document.getElementById(id);
 const stage=byId("stage"),canvas=byId("warehouse");
@@ -79,6 +79,11 @@ async function run(){
     fit=true;
     schedule();
   }
+  function viewReachTruck(){
+    Object.assign(pose,{x:19.32,y:floor+1.18,z:7.46,az:1.02,el:.61,distance:10.2,fov:43});
+    fit=false;
+    schedule();
+  }
   function viewPalletJacks(){
     Object.assign(pose,{x:-21.00,y:floor+.62,z:7.70,az:.33,el:.56,distance:8.9,fov:43});
     fit=false;
@@ -154,6 +159,7 @@ async function run(){
   byId("in").addEventListener("click",()=>zoom(.80));
   byId("reset").addEventListener("click",reset);
   byId("jack").addEventListener("click",viewPalletJacks);
+  byId("reach").addEventListener("click",viewReachTruck);
   byId("full").hidden=!stage.requestFullscreen;
   byId("full").addEventListener("click",()=>{
     const operation=document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen();

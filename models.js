@@ -122,6 +122,127 @@ export function buildProps(tools, scene){
     box(g,0,1.08,.65,1.06,.05,.065,C.ice);  // roof-side reinforcement
     return g;
   }
+
+  // Compact seated reach truck (narrow-aisle stacker), modeled from the
+  // provided yellow-and-graphite reference. +Z is the lifting/fork direction.
+  // This is a distinct industrial machine, not a pallet-jack variant.
+  function reachTruck(x,y,z,heading=0){
+    const g=group(scene,x,y,z);
+    g.rotation.y=heading;
+    g.name="Seated narrow-aisle reach truck";
+    const graphite="#5a6265",frame="#626c70",black="#232a2d",rubber="#25272a";
+    const yellow="#e6ad27",yellowLight="#f0bf37",yellowDeep="#d5961f";
+    const steel="#909a9c",metal="#c5cbcb",screen="#313d42";
+    const wheelPart=(cx,cy,cz,r,thickness=.14)=>{
+      const tire=cyl(g,cx,cy,cz,r,thickness,rubber);
+      tire.rotation.z=Math.PI/2;
+      const hub=cyl(g,cx,cy,cz,r*.48,thickness+.014,steel);
+      hub.rotation.z=Math.PI/2;
+    };
+
+    // Rounded steel undercarriage and rear steering drive assembly.
+    round(g,0,.255,-.40,1.37,.40,1.61,.135,graphite);
+    round(g,0,.43,-1.05,1.24,.31,.52,.15,graphite);
+    box(g,0,.13,-.49,1.19,.13,1.19,frame);
+    for(const xx of [-.54,.54]){
+      round(g,xx,.32,-.69,.14,.37,.57,.060,graphite);
+      box(g,xx,.21,-1.06,.23,.16,.18,black);
+    }
+    wheelPart(-.49,.195,-.98,.19,.17);
+    wheelPart(.49,.195,-.98,.19,.17);
+    cyl(g,0,.18,-1.12,.20,.13,rubber); // rear drive wheel
+
+    // Low yellow machinery compartment; cabin remains genuinely open on the left.
+    round(g,.47,.73,-.56,.38,.77,1.15,.09,yellow);
+    round(g,-.12,.52,-1.05,.99,.72,.48,.10,yellowLight);
+    round(g,.40,.81,-.97,.48,.93,.35,.09,yellowDeep);
+    box(g,.19,.46,-.28,.84,.09,.85,black);   // anti-slip foot deck
+    box(g,-.22,.55,-.42,.50,.10,.68,graphite);
+    box(g,.63,.63,-.49,.025,.30,.80,yellowLight);
+
+    // Open side entry and footwell, with a small anti-slip foot plate.
+    box(g,-.51,.33,-.15,.23,.075,.54,steel);
+    for(const zz of [-.38,-.21,-.04,.13])
+      box(g,-.52,.374,zz,.18,.006,.013,black);
+
+    // Operator station: sculpted seat cushion and back, armrest and steering.
+    round(g,.03,.78,-.60,.47,.17,.43,.066,black);
+    round(g,.04,1.065,-.86,.48,.52,.14,.068,screen);
+    round(g,.04,1.14,-.80,.36,.30,.12,.048,"#50595b");
+    for(const xx of [-.19,.28]){
+      box(g,xx,.77,-.55,.052,.14,.42,steel);
+    }
+    box(g,-.35,.71,-.02,.25,.23,.38,graphite);  // left console
+    box(g,-.39,.86,-.07,.22,.050,.27,black);
+    const steering=cyl(g,-.38,1.035,-.03,.165,.036,black);
+    steering.rotation.x=.36;
+    cyl(g,-.38,.92,-.03,.036,.22,steel);
+    cyl(g,-.21,.95,.09,.055,.16,yellowLight);
+    round(g,-.21,1.035,.09,.056,.11,.068,black); // joystick
+    box(g,-.44,.81,-.30,.15,.10,.12,screen);
+    round(g,-.44,.895,-.30,.14,.105,.03,steel);
+
+    // Tall protective overhead guard; an open rectangular steel frame
+    // matches the reference rather than a solid overhead roof panel.
+    for(const xx of [-.60,.60]){
+      box(g,xx,1.82,-1.04,.082,1.79,.090,frame); // rear posts
+      box(g,xx,1.86,.29,.083,1.72,.09,frame);   // forward posts
+      box(g,xx,2.73,-.38,.082,.11,1.52,frame);// longitudinal roof bars
+      box(g,xx,1.36,-1.03,.086,.23,.10,graphite);
+    }
+    box(g,0,2.74,-1.05,1.33,.13,.12,frame);
+    box(g,0,2.74,.29,1.33,.13,.12,frame);
+    box(g,0,2.765,-.28,1.31,.075,.072,steel);
+    box(g,0,2.78,-.68,1.31,.045,.068,frame);
+    // Thin upper struts preserve open visibility into the driver compartment.
+    for(const zz of [-.78,-.15,.12])
+      box(g,0,2.77,zz,1.29,.043,.052,graphite);
+    box(g,-.61,1.25,-.93,.045,.70,.19,steel);
+    box(g,.61,1.24,.28,.06,.35,.17,steel);
+
+    // Two-stage telescopic high-lift mast mounted at the front.
+    // Parallel rails, carriage, chains and hydraulic lift give it a
+    // recognizable reach-truck profile from both side and top.
+    const mastZ=.63;
+    for(const xx of [-.48,.48]){
+      round(g,xx,1.51,mastZ,.17,2.67,.19,.028,graphite);
+      box(g,xx,1.58,mastZ+.103,.035,2.47,.043,black); // channels
+      round(g,xx*.76,1.76,mastZ+.135,.095,2.02,.11,.018,steel);
+      box(g,xx*.77,1.23,mastZ+.25,.028,1.30,.035,screen); // lift chains
+    }
+    box(g,0,2.86,mastZ,1.25,.16,.26,graphite);
+    box(g,0,2.62,mastZ,1.07,.10,.18,steel);
+    cyl(g,0,1.43,mastZ+.07,.082,2.24,graphite);
+    cyl(g,0,2.13,mastZ+.07,.036,1.02,metal);
+    box(g,0,.73,mastZ+.19,.98,.18,.20,black);
+    box(g,0,1.02,mastZ+.22,.86,.12,.16,frame);
+    for(const xx of [-.35,.35]){
+      box(g,xx,.90,mastZ+.23,.08,.64,.10,steel);
+      box(g,xx,1.17,mastZ+.25,.085,.09,.12,graphite);
+    }
+    // Carrying forks, independently visible above ground-level support arms.
+    for(const xx of [-.31,.31]){
+      round(g,xx,.41,1.43,.135,.085,1.48,.025,graphite);
+      round(g,xx,.41,2.10,.122,.065,.22,.025,steel);
+      box(g,xx,.69,.83,.14,.60,.12,graphite);  // fork heels
+
+      // Outriggers with front load rollers (distinct from lifting forks).
+      round(g,xx*1.81,.19,1.08,.17,.20,1.73,.056,graphite);
+      round(g,xx*1.81,.20,1.88,.145,.13,.26,.04,steel);
+      wheelPart(xx*1.81,.105,1.84,.095,.11);
+      box(g,xx*1.81,.25,.40,.17,.20,.22,yellowDeep);
+    }
+
+    // Small safety, lighting and finish details.
+    cyl(g,-.52,2.85,-.91,.075,.09,yellowLight); // beacon
+    box(g,0,.63,-1.32,.43,.085,.032,rubber);
+    for(const xx of [-.43,.43]){
+      box(g,xx,.62,-1.34,.16,.085,.035,"#b23f39");
+      cyl(g,xx,.90,.52,.068,.045,metal);
+    }
+    return g;
+  }
+
   function trolley(x,y,z,powered){
     const g=group(scene,x,y,z);
     if(powered){
@@ -279,5 +400,5 @@ export function buildProps(tools, scene){
     const swing=box(p,x+.123,1.65,z+.061,.30,.040,.041,C.steel);swing.rotation.y=.40;
     round(p,x+.244,1.60,z+.111,.179,.085,.137,.018,C.yellow);
   }
-  return {post,rail,pallet,forklift,trolley,truck,person,table,computer,printer,lamp};
+  return {post,rail,pallet,forklift,reachTruck,trolley,truck,person,table,computer,printer,lamp};
 }
