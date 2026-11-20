@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import {floor,presets,fitWarehouse} from "./layout.js?v=13";
-import {makeWarehouse} from "./scene.js?v=13";
+import {floor,presets,fitWarehouse} from "./layout.js?v=14";
+import {makeWarehouse} from "./scene.js?v=14";
 
 const byId=id=>document.getElementById(id);
 const stage=byId("stage"),canvas=byId("warehouse");
@@ -36,6 +36,7 @@ async function run(){
     renderer.render(scene,camera);
   }
   function schedule(){if(!frame)frame=requestAnimationFrame(render);}
+  for(const pending of scene.userData.pendingAssetLoads||[])pending.then(schedule);
   function startNavigation(){updateCamera();fit=false;}
   function setRay(clientX,clientY){
     updateCamera();
