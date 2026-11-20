@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import {floor,presets,fitWarehouse} from "./layout.js?v=17";
-import {makeWarehouse} from "./scene.js?v=17";
+import {floor,presets,fitWarehouse} from "./layout.js?v=18";
+import {makeWarehouse} from "./scene.js?v=18";
 
 const byId=id=>document.getElementById(id);
 const stage=byId("stage"),canvas=byId("warehouse");

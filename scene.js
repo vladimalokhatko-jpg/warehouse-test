@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=17";
-import {modelTools,buildProps,colors as C} from "./models.js?v=17";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=17";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=18";
+import {modelTools,buildProps,colors as C} from "./models.js?v=18";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=18";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -9,7 +9,7 @@ export function makeWarehouse(canvas){
   const {box,round,cyl,group,label,graphic,flat}=tools;
   const {post,rail,pallet,forklift,reachTruck,trolley,person,table,computer,printer,lamp}=buildProps(tools,scene);
   const {left,right,front,back}=shell;
-  const labels={4:"УПОРЫ",5:"ЗАРЯДНАЯ",6:"ПОГРУЗЧИК",7:"ШТАБЕЛЁР",8:"РОХЛИ",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
+  const labels={5:"ЗАРЯДНАЯ",11:"WHITE",12:"YELLOW · ОТК",13:"GREEN · К РАЗМЕЩЕНИЮ",14:"RED · КАРАНТИН",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
   const ink="#334a52", concrete="#c5ceca", normalFloor="#bcc6c4", white="#f7f0dd";
   const lane="#d7ae62", path="#55ae79", deck="#aab9b8", wall="#a9bdbe";
   const y=floor+.01;
@@ -260,7 +260,7 @@ export function makeWarehouse(canvas){
   // Numbered zone floors.
   for(const zone of zones){
     const [x,z,w,d]=boundsBox(zone.bounds);
-    if(![1,2,5,9,10].includes(zone.id)){
+    if(![1,2,3,4,5,9,10].includes(zone.id)){
       flat(x,z,w,d,y+.012,basic(zone.color));
       outline(x,z,w,d,y+.018,zone.id===11?"#849a91":white,.055);
       const title=labels[zone.id];
@@ -446,19 +446,42 @@ export function makeWarehouse(canvas){
     outline(x,14.08,5.65,7.44,.031,white,.068);
     floorSymbol("forklift",x,15.35,1.25);
   }
-  for(const [i,x] of [-5.60,-2.18].entries()){
-    outline(x,6.76,2.88,1.57,y+.023,white,.050);
-    pallet(x,floor,6.70,i,false);pallet(x,floor+.154,6.70,i+1,false);
-    groundText(x,7.48,1.38,.32,"П"+(i+1));
+  // Compact protected 5S dock service niche, BETWEEN the two door openings.
+  // Only dock accessories belong here; no pallets or equipment are left on
+  // the maneuvering apron in front of the docks.
+  flat(-3.91,8.37,7.10,2.20,y+.026,basic("#b1b9b4",.32));
+  outline(-3.91,8.37,7.10,2.20,y+.034,"#e8e9df",.044);
+  // Slim cabinet on the wall: forms, small service tools, inspection log.
+  const dockCabinet=group(scene,-3.94,floor,9.24);
+  round(dockCabinet,0,.78,0,1.30,1.45,.43,.044,"#819194");
+  round(dockCabinet,0,.82,-.23,1.19,1.30,.038,.018,"#aabcb9");
+  box(dockCabinet,.45,.87,-.258,.032,.19,.016,C.steel);
+  sign(-3.94,floor+1.95,9.53,2.60,.32,"DOCK SERVICE",white,C.navy,Math.PI);
+  // Dedicated returns for dock 1 and dock 2; chocks are stored in holders
+  // rather than loose on the floor, avoiding trip hazards.
+  for(const [i,x] of [-6.30,-1.57].entries()){
+    const stand=group(scene,x,floor,8.62);
+    box(stand,0,.055,0,1.12,.10,.70,C.steel);
+    box(stand,0,.66,.27,1.16,1.20,.075,C.steel);
+    box(stand,0,.56,-.08,.99,.085,.45,C.dark);
+    box(stand,0,.96,.23,1.00,.045,.18,C.yellow);
+    for(const dx of [-.26,.26]){
+      const chock=group(stand,dx,.615,-.09);
+      box(chock,0,.043,0,.34,.076,.32,C.dark);
+      const wedge=box(chock,0,.14,.055,.31,.175,.205,C.yellow);
+      wedge.rotation.x=-.34;
+      box(chock,0,.25,-.08,.21,.028,.04,C.dark);
+    }
+    sign(x,floor+1.43,8.93,.96,.25,"DOCK "+(i+1),white,C.navy,Math.PI);
   }
-  for(const x of [-5.04,-2.70]){
-    const chock=group(scene,x,floor,8.78);
-    box(chock,0,.031,0,.83,.062,.65,C.dark);
-    box(chock,0,.132,.15,.67,.214,.283,C.yellow);
-    box(chock,0,.119,-.050,.67,.095,.54,C.yellow).rotation.x=-.34;
-    box(chock,0,.22,.296,.24,.075,.096,C.steel);
+  // Minimal fixed housekeeping point next to the central cabinet.
+  // Broom and dustpan are secured to the wall and do not occupy the aisle.
+  for(const x of [-4.62,-4.40]){
+    const handle=cyl(scene,x,floor+1.17,9.54,.022,1.46,"#c2ae85");
+    handle.castShadow=true;
+    box(scene,x,floor+.41,9.53,.18,.14,.07,C.steel);
   }
-  forklift(receiving.truckFork,floor,7.52,Math.PI);
+  forklift(receiving.truckFork,floor,7.52,0);
   // Seated narrow-aisle reach truck, matching the supplied photo.
   const stacker=reachTruck(receiving.stacker,floor,7.51,0);
   stacker.scale.setScalar(.90); // parked inside the original receiving footprint
