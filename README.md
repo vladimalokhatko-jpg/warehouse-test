@@ -31,6 +31,17 @@
 
 Эта сцена условная: окончательные размеры проходов, зоны работы погрузчика, пожарные требования, доступность выходов и организация карантина требуют отдельной проверки для конкретного помещения и оборудования.
 
+## Warehouse v22 — protection and routes
+
+Pedestrian access follows the green perimeter walkway with branches to the
+SQCD huddle, workstations and mezzanine stairs. An orphan branch into putaway
+storage has been removed. Forklift routes remain separate, with marked working
+cross-aisles and physical guardrail/bollard protection at vulnerable areas.
+
+The quarantine gate can be opened and closed using the **Open Gate** / **Close Gate**
+button; this is a classroom model, not an approved industrial traffic plan.
+The inbound workstation access is marked behind pallet positions.
+
 ## Публичная версия
 
 https://vladimalokhatko-jpg.github.io/warehouse-test/

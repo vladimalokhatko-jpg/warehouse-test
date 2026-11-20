@@ -73,14 +73,14 @@ export const groups=[
     [6,"Forklift Parking", [10.55,16.12,5.99,9.60],"#b4c0b9","Выделенное парковочное место погрузчика справа от второго дока, вне проезда."],
     [7,"Reach Truck Parking", [16.22,21.70,5.99,9.60],"#b4c0b9","Парковка ричтрака в единой линии с погрузчиком, без пересечения с правым транспортным коридором."],
     [8,"Pallet Jack Parking",[-24.10,-18.40,6.07,9.60],"#b4c0b9","Две ручные гидравлические тележки в компактном общем парковочном кармане слева от первого дока."],
-    [9,"Pedestrian Walkway",[-31,-27.2,-43.8,10.8],"#58a793","Продольная дорожка вдоль левой стены соединяет вход, офис и подходы к рабочим местам. На пересечениях нанесены зебры."],
+    [9,"Pedestrian Walkway",[-31,-27.2,-43.8,10.8],"#58a793","Main pedestrian route with protected branches to the huddle, two inbound workstations and mezzanine stairs; no through-route into pallet staging."],
     [10,"Forklift Access Aisle",[-21.2,26.0,1.18,5.59],"#d5a352","Свободная зона движения погрузчиков от ворот приёмки к основным складским проездам. Размещение паллет, буферные ячейки и хранение не предусмотрены."],
   ]},
   {title:"Приёмка и контроль",zones:[
     [11,"Receiving",[-22.40,-3.55,-3.25,.25],"#c8dce4","Receiving desk, floor scale and three inbound pallet positions; material is identified, counted and labelled before further routing."],
     [12,"Inspection",[-2.90,20.05,-3.25,.25],"#e9dfca","Inspection workstation, compact measurement cabinet and four pallet positions, used only when inspection is required."],
     [13,"Putaway Staging",[-25.35,-4.50,-9.30,-5.60],"#d3e2d5","Short-term, released pallet positions before movement to storage. No desks or other equipment inside the staging area."],
-    [14,"Quarantine",[-3.75,20.10,-9.30,-5.60],"#d9d5d2","Separately fenced, controlled holding area for material requiring disposition. Access gate is along the outer aisle, clear of pallet positions."],
+    [14,"Quarantine",[-3.75,20.10,-9.30,-5.60],"#d9d5d2","Fenced holding area with opening-and-closing inward swing gate; keep access and gate sweep free of stored material."],
   ]},
   {title:"Хранение и отгрузка",zones:[
     [15,"Pallet Racking",[-9.4,11.5,-24.35,-18.0],"#a7b9bf","Три пролёта с отдельными табличками «Отремонтированные» и «Новые детали»."],
@@ -147,7 +147,7 @@ export const zoneCameras={
     shot("Putaway staging",-15.1,-7.42,1.76,.37,.67,23.0),
   ],
   14:[
-    shot("Quarantine fence and gate",17.4,-5.70,2.14,.32,.54,14.4),
+    shot("Swinging Quarantine Gate",16.5,-6.92,2.18,.54,.68,12.8),
     shot("Quarantine pallet positions",8.0,-7.47,1.89,.36,.65,23.4),
   ],
   15:[

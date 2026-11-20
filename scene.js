@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=21";
-import {modelTools,buildProps,colors as C} from "./models.js?v=21";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=21";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=22";
+import {modelTools,buildProps,colors as C} from "./models.js?v=22";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=22";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -179,8 +179,12 @@ export function makeWarehouse(canvas){
   const pathSpans=[
     [-29.13,-16.80,2.45,53.60],       // continuous perimeter walkway (-43.60 to +10)
     [-24.85,4.35,6.73,1.35],          // receiving-office approach
-    [-26.64,-6.43,2.55,1.30],         // safe access stops at staging edge, not over pallet bays
-    [-27.56,-2.10,1.24,1.22],         // pedestrian entry to morning huddle
+    [-27.56,-2.10,1.24,1.22],         // entry to SQCD huddle
+    [-20.08,-1.19,5.36,.55],          // protected access to receiving desk
+    [-17.55,-.60,.66,1.78],          // link to rear staff corridor
+    [-7.90,-.10,19.36,.54],          // corridor behind receiving and inspection pallet slots
+    [-2.42,-.96,.55,1.70],          // spur to inspection desk
+    [-26.29,-21.38,4.16,1.16],      // direct stair access from perimeter route
     [-26.53,-28.15,3.20,1.14],        // forklift-parking access
     [-4.60,-35.36,49.10,1.24],        // rear walkway to chemical personnel door
     [-29.13,13.20,2.44,6.0],          // exterior entrance to walkway
@@ -222,8 +226,10 @@ export function makeWarehouse(canvas){
     floorSymbol("pedestrian",-29.13,z,.87);
   for(const x of [-23.5,-16.7,-9.9,-3.1,3.5,15.0])
     floorSymbol("pedestrian",x,-35.36,.87,Math.PI/2);
-  for(const [x,z] of [[-24.45,4.35],[-25.45,-6.43],[-26.44,-28.15]])
-    floorSymbol("pedestrian",x,z,.70,Math.PI/2);
+  for(const [x,z] of [[-24.45,4.35],[-26.44,-28.15],[-26.10,-21.38]])
+    floorSymbol("pedestrian",x,z,.56,Math.PI/2);
+  for(const [x,z] of [[-20.10,-1.19],[-14.20,-.10],[-8.70,-.10],[-3.20,-.10],[-2.42,-1.10]])
+    floorSymbol("pedestrian",x,z,.39,Math.PI/2);
 
   // Aisles (horizontal): evenly spaced, sparse, centerline floor icons.
   for(const z of [-4.45,-10.41,-16.84,-25.55,-33.04])
@@ -252,9 +258,29 @@ export function makeWarehouse(canvas){
   rail(-27.85,9.94,-27.85,5.04,floor,.87);
   rail(-27.85,5.04,-21.57,5.04,floor,.87);
   rail(-21.57,3.63,-21.57,5.04,floor,.87);
-  // The rail's deliberate opening lets staff leave the green walkway.
-  for(const [a,b] of [[-.75,-1.40],[-2.84,-5.72],[-7.09,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
+  // No dead-end into the storage staging area; open only at real destinations.
+  for(const [a,b] of [[-.75,-1.40],[-2.84,-20.18],[-22.58,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
     rail(-27.76,a,-27.76,b,floor,.87);
+  // Physical separation of pedestrians behind the two inbound desks.
+  for(const [a,b] of [[-17.2,-5.15],[-2.72,1.5]])
+    rail(a,.64,b,.64,floor,.66);
+  function guardBollard(x,z){
+    const g=group(scene,x,floor,z);
+    cyl(g,0,.46,0,.079,.92,C.yellow);
+    cyl(g,0,.74,0,.083,.16,C.dark);
+    cyl(g,0,.16,0,.087,.14,C.dark);
+    cyl(g,0,.035,0,.19,.070,C.steel);
+    return g;
+  }
+  // Receiving work area's two vulnerable corners, protected without closing access.
+  for(const z of [-3.13,-.18])guardBollard(-22.55,z);
+  // West of Putaway Staging: no pallet storage and no pedestrian entrance.
+  for(const z of [-5.82,-9.09])guardBollard(-25.49,z);
+  rail(-25.49,-6.00,-25.49,-8.90,floor,.69);
+  flat(-24.64,-7.42,1.12,2.96,y+.040,basic("#e7e9dc",.83));
+  groundText(-24.64,-7.44,.75,.29,"KEEP CLEAR","#65716a",y+.057,Math.PI/2);
+  // Guard the foot of the mezzanine stairs against accidental pallet placement.
+  for(const z of [-22.25,-20.50])guardBollard(-24.43,z);
   for(const [x0,x1] of [[-23.3,-18.0],[-13.8,-8.5],[-2.2,3.0],[14.2,18.7]])
     rail(x0,-34.69,x1,-34.69,floor,.74);
   for(const [x,z] of [[21.70,-16.15],[-12.08,-17.82],[21.65,-30.89],[-26.72,-31.4],[-4.32,-35.78],[27.01,-28.01]]){
@@ -285,9 +311,10 @@ export function makeWarehouse(canvas){
       outline(x,z,w,d,y+.019,accent ? accent.edge : white,accent ? .085 : .055);
       const title=labels[zone.id];
       if(accent){
-        // One narrow header strip with enough contrast for an overhead camera.
-        flat(x,z+d/2-.225,w-.25,.33,y+.028,basic("#f0f0e9",.93));
-        groundText(x,z+d/2-.225,Math.min(w*.83,Math.max(3.0,title.length*.26)),.28,title,accent.title,y+.052);
+        // Keep the receiving/inspection header away from the staff access behind slots.
+        const headerZ=zone.id===11||zone.id===12 ? z-d/2+.23 : z+d/2-.225;
+        flat(x,headerZ,w-.25,.33,y+.028,basic("#f0f0e9",.93));
+        groundText(x,headerZ,Math.min(w*.83,Math.max(3.0,title.length*.26)),.28,title,accent.title,y+.052);
       }else if(title){
         groundText(x,z+d/2-.25,Math.min(w*.92,title.length*.268),.36,title,ink,y+.050);
       }
@@ -648,9 +675,23 @@ export function makeWarehouse(canvas){
     [[q.left,q.near],[q.gate0,q.near]],
     [[q.gate1,q.near],[q.right,q.near]]
   ])fence(...a,...b,fenceColor);
-  // Guarded, clearly indicated side opening; nothing hangs across the gate.
-  for(const xx of [q.gate0,q.gate1])post(xx,floor,q.near,.98,.07);
-  sign(12.70,floor+1.48,-5.48,3.02,.33,"QUARANTINE",white,C.navy);
+  // Operable swing gate, closed across opening. Positive Y rotation
+  // opens the leaf inward to negative Z, clear of the forklift lane.
+  const quarantineGate=group(scene,q.gate0,floor,q.near);
+  quarantineGate.name="Quarantine Gate";
+  const gateWidth=q.gate1-q.gate0-.10;
+  for(const h of [.16,.61,1.06])
+    box(quarantineGate,gateWidth/2,h,0,gateWidth,.066,.075,"#66747b");
+  for(const xx of [.06,.56,1.08,1.60,2.12,2.64,gateWidth-.06])
+    box(quarantineGate,xx,.61,0,.042,1.01,.048,"#66747b");
+  box(quarantineGate,gateWidth*.50,.88,.045,.82,.10,.04,C.yellow);
+  box(quarantineGate,gateWidth-.04,.67,-.055,.10,.17,.13,C.dark);
+  for(const hh of [.2,.93])cyl(scene,q.gate0,floor+hh,q.near,.076,.18,C.steel);
+  guardBollard(q.gate1+.08,q.near);
+  sign(12.80,floor+1.48,-5.48,3.02,.33,"QUARANTINE",white,C.navy);
+  // Keep the entire inward sweep clear for a 90-degree opening.
+  outline(17.72,-7.15,3.02,2.88,y+.034,"#aab2ab",.045);
+  groundText(17.72,-7.15,2.52,.33,"GATE KEEP CLEAR","#5e6b68",y+.054,Math.PI/2);
 
   // Main storage. Two groups of racks, plus a two-level mezzanine and a cantilever.
   function rack(x,z,w,d,title,kind="standard"){
@@ -811,5 +852,5 @@ export function makeWarehouse(canvas){
     renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.13;
   }else renderer=new SoftwareRenderer(canvas,new Set());
-  return {scene,renderer};
+  return {scene,renderer,quarantineGate};
 }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import {floor,presets,fitWarehouse} from "./layout.js?v=21";
-import {makeWarehouse} from "./scene.js?v=21";
+import {floor,presets,fitWarehouse} from "./layout.js?v=22";
+import {makeWarehouse} from "./scene.js?v=22";
 
 const byId=id=>document.getElementById(id);
 const stage=byId("stage"),canvas=byId("warehouse");
@@ -8,7 +8,7 @@ const clamp=(value,low,high)=>Math.max(low,Math.min(high,value));
 
 async function run(){
   await Promise.all([document.fonts.load("800 24px Inter","СКЛАД"),document.fonts.load("800 24px Inter","WAREHOUSE")]);
-  const {scene,renderer}=makeWarehouse(canvas);
+  const {scene,renderer,quarantineGate}=makeWarehouse(canvas);
   const camera=new THREE.PerspectiveCamera(43,1,.05,900);
   const pose={...presets.overall,distance:110};
   const target=new THREE.Vector3();
@@ -78,6 +78,27 @@ async function run(){
     Object.assign(pose,presets.overall);
     fit=true;
     schedule();
+  }
+  function viewQuarantineGate(){
+    Object.assign(pose,{x:16.5,y:floor+1.1,z:-6.92,az:.54,el:.68,distance:12.8,fov:43});
+    fit=false; schedule();
+  }
+  let gateOpen=false,gateFrame=0;
+  function toggleQuarantineGate(){
+    gateOpen=!gateOpen;
+    const control=byId("qgate");
+    control.textContent=gateOpen?"Close Gate":"Open Gate";
+    control.setAttribute("aria-pressed",String(gateOpen));
+    viewQuarantineGate();
+    if(gateFrame)cancelAnimationFrame(gateFrame);
+    const from=quarantineGate.rotation.y,to=gateOpen?Math.PI/2:0,start=performance.now();
+    function animate(now){
+      const t=Math.min(1,(now-start)/520),smooth=t*t*(3-2*t);
+      quarantineGate.rotation.y=from+(to-from)*smooth;
+      schedule();
+      gateFrame=t<1?requestAnimationFrame(animate):0;
+    }
+    gateFrame=requestAnimationFrame(animate);
   }
   function viewInbound(){
     Object.assign(pose,{x:-2.60,y:floor+1.40,z:-4.45,az:.10,el:1.13,distance:46.0,fov:43});
@@ -172,6 +193,7 @@ async function run(){
   byId("reach").addEventListener("click",viewReachTruck);
   byId("huddle").addEventListener("click",viewHuddle);
   byId("inbound").addEventListener("click",viewInbound);
+  byId("qgate").addEventListener("click",toggleQuarantineGate);
   byId("full").hidden=!stage.requestFullscreen;
   byId("full").addEventListener("click",()=>{
     const operation=document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen();
