@@ -80,6 +80,11 @@ async function run(){
     fit=true;
     schedule();
   }
+  function viewGLBJack(){
+    Object.assign(pose,{x:-21.00,y:floor+.62,z:7.70,az:.33,el:.56,distance:8.9,fov:43});
+    fit=false;
+    schedule();
+  }
   function gesture(){
     const [a,b]=Array.from(pointers.values());
     return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))};
@@ -149,6 +154,7 @@ async function run(){
   byId("out").addEventListener("click",()=>zoom(1/.80));
   byId("in").addEventListener("click",()=>zoom(.80));
   byId("reset").addEventListener("click",reset);
+  byId("jack").addEventListener("click",viewGLBJack);
   byId("full").hidden=!stage.requestFullscreen;
   byId("full").addEventListener("click",()=>{
     const operation=document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen();
