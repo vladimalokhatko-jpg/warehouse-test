@@ -9,7 +9,7 @@
 ```text
           RECEIVING DOCKS
       CLEAR FORKLIFT ACCESS
-   RECEIVING       |   INSPECTION (if required)
+   INSPECTION      |   RECEIVING
         MAIN FORKLIFT CROSS AISLE
    PUTAWAY STAGING |   QUARANTINE (fenced gate)
           STORAGE ACCESS
@@ -44,13 +44,23 @@ The inbound workstation access is marked behind pallet positions.
 
 ## Warehouse v23 — Protected operator stations
 
-- Both Receiving and Inspection workstations are set back from the active
+- Inspection LEFT and Receiving RIGHT workstations are set back from the active
   forklift cross-aisle, with impact guardrails along the traffic-facing edge.
 - The protected pedestrian corridor begins at the exterior office wall and
   runs straight behind both inbound desks. Each has one short, direct entrance.
 - Pallet positions remain accessible from the independent southern forklift aisle.
 - Guardrail ends have protective bollards. This is a teaching layout, not an
   approved real-world traffic plan.
+
+## Warehouse v24 — Revised receiving and inspection
+
+The 3D model now has **Inspection on the left** and **Receiving on the right**.
+The two worker seats are behind their desks, and the nameplates are attached to
+the continuous protective guardrail (not desk fronts).
+
+Pedestrian path junctions have been simplified: no disconnected short spurs,
+with a single lane following the north side of both stations. Narrow overlap
+strips from adjoining path polygons have been removed to prevent floor seams.
 
 ## Публичная версия
 
