@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=24";
-import {modelTools,buildProps,colors as C} from "./models.js?v=24";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=24";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=24.1";
+import {modelTools,buildProps,colors as C} from "./models.js?v=24.1";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=24.1";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -639,7 +639,14 @@ export function makeWarehouse(canvas){
       box(scene,x+offset,floor+1.06,1.14,.060,.42,.066,C.steel);
       box(scene,x+offset,floor+1.25,1.14,.14,.06,.09,accent);
     }
-    sign(x,floor+1.24,1.14,2.60,.36,textValue,white,C.navy,0);
+    // A single-sided canvas label becomes unreadable when the viewer approaches
+    // from the other side. Use a double-sided physical sign: two outward-facing
+    // label meshes, each in front of its own opaque backing plate.
+    // North face (+Z) and the vehicle-aisle face (-Z) both read correctly.
+    sign(x,floor+1.24,1.23,2.60,.36,textValue,white,C.navy,0);
+    sign(x,floor+1.24,1.05,2.60,.36,textValue,white,C.navy,Math.PI);
+    for(const offset of [-1.10,1.10])
+      box(scene,x+offset,floor+1.24,1.14,.07,.06,.23,C.steel);
     box(scene,x,floor+1.01,1.14,2.66,.045,.076,accent);
   }
 
