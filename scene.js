@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=23";
-import {modelTools,buildProps,colors as C} from "./models.js?v=23";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=23";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=23.1";
+import {modelTools,buildProps,colors as C} from "./models.js?v=23.1";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=23.1";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -180,7 +180,7 @@ export function makeWarehouse(canvas){
     [-29.13,-16.80,2.45,53.60],       // continuous perimeter walkway (-43.60 to +10)
     [-24.85,4.35,6.73,1.35],          // receiving-office approach
     [-27.56,-2.10,1.24,1.22],         // huddle entry from west pedestrian route
-    [-21.98,-1.14,1.56,.60],         // huddle to office's southeast corner
+    [-22.35,-1.14,2.30,.60],         // adequate connection from huddle to office corner
     [-21.07,-.28,.78,2.20],         // short link alongside east office wall
     [-9.00,.62,24.20,.88],          // single straight route for both desk stations
     [-18.30,-.61,.82,1.48],        // receiving desk approach (north side)
