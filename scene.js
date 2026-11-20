@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=18";
-import {modelTools,buildProps,colors as C} from "./models.js?v=18";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=18";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=19";
+import {modelTools,buildProps,colors as C} from "./models.js?v=19";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=19";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -172,6 +172,7 @@ export function makeWarehouse(canvas){
     [-29.13,-16.80,2.45,53.60],       // continuous perimeter walkway (-43.60 to +10)
     [-24.85,4.35,6.73,1.35],          // receiving-office approach
     [-25.75,-6.43,4.95,1.30],         // inspection access
+    [-27.56,-2.10,1.24,1.22],         // pedestrian entry to morning huddle
     [-26.53,-28.15,3.20,1.14],        // forklift-parking access
     [-4.60,-35.36,49.10,1.24],        // rear walkway to chemical personnel door
     [-29.13,13.20,2.44,6.0],          // exterior entrance to walkway
@@ -243,7 +244,8 @@ export function makeWarehouse(canvas){
   rail(-27.85,9.94,-27.85,5.04,floor,.87);
   rail(-27.85,5.04,-21.57,5.04,floor,.87);
   rail(-21.57,3.63,-21.57,5.04,floor,.87);
-  for(const [a,b] of [[-.75,-5.72],[-7.09,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
+  // The rail's deliberate opening lets staff leave the green walkway.
+  for(const [a,b] of [[-.75,-1.40],[-2.84,-5.72],[-7.09,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
     rail(-27.76,a,-27.76,b,floor,.87);
   for(const [x0,x1] of [[-23.3,-18.0],[-13.8,-8.5],[-2.2,3.0],[14.2,18.7]])
     rail(x0,-34.69,x1,-34.69,floor,.74);
@@ -385,7 +387,9 @@ export function makeWarehouse(canvas){
     round(chair,x*1.86,1.04,.365,.117,.115,.39,.033,"#69988b");
     round(chair,x*1.86,1.08,.575,.112,.073,.12,.026,"#b48b74");
   }
-  const sqcd=group(scene,-25.72,floor,-.43);
+  // Rear wall of reception office, exterior-facing dashboard for daily huddles.
+  const sqcd=group(scene,-25.72,floor,-.93);
+  sqcd.rotation.y=Math.PI;
   for(const x of [-1.85,1.85])box(sqcd,x,1.48,-.045,.055,2.44,.075,C.steel);
   round(sqcd,0,1.72,0,4.04,1.72,.11,.052,C.navy);
   const dashboard=graphic(sqcd,0,1.72,.064,3.87,1.56,(ctx,w,h)=>{
@@ -414,9 +418,54 @@ export function makeWarehouse(canvas){
       card.bars.forEach((bar,j)=>{ctx.fillStyle=card.color;ctx.fillRect(left+width*(.16+j*.145),h*.84-h*.14*bar,width*.09,h*.14*bar);});
     });
     ctx.fillStyle="#516a6a";ctx.textAlign="left";ctx.font="600 "+Math.round(h*.037)+"px Inter, sans-serif";
-    ctx.fillText("DEMO DATA",w*.035,h*.943);
+    ctx.fillText("DEMO VALUES · UPDATE AT SHIFT START",w*.035,h*.943);
   });
   dashboard.userData.canvasSortAnchor=new THREE.Vector3(0,1.72,.077);
+
+  // Second panel to allocate shifts and record hazards, owners and blockers.
+  const planBoard=group(scene,-22.62,floor,-.93);
+  planBoard.rotation.y=Math.PI;
+  for(const x of [-.80,.80])box(planBoard,x,1.46,-.055,.052,2.38,.075,C.steel);
+  round(planBoard,0,1.72,0,1.84,1.74,.090,.040,C.navy);
+  const today=graphic(planBoard,0,1.72,.064,1.68,1.58,(ctx,w,h)=>{
+    ctx.fillStyle="#f3f5ef";ctx.fillRect(0,0,w,h);
+    ctx.fillStyle="#263b49";ctx.fillRect(0,0,w,h*.19);
+    ctx.textAlign="left";ctx.textBaseline="middle";
+    ctx.fillStyle="#ffffff";ctx.font="800 "+Math.round(h*.09)+"px Inter,sans-serif";
+    ctx.fillText("TODAY / SHIFT",w*.05,h*.095);
+    const rows=[
+      ["1","SAFETY / PPE","#458a73"],
+      ["2","RECEIVING / WORK","#547b90"],
+      ["3","TASKS / OWNERS","#547b90"],
+      ["4","ISSUES / ESCALATE","#b4834e"]
+    ];
+    rows.forEach(([num,title,color],i)=>{
+      const y=h*(.215+i*.173);
+      ctx.fillStyle=i%2?"#e6eae4":"#dae5de";ctx.fillRect(w*.04,y,w*.92,h*.152);
+      ctx.fillStyle=color;ctx.fillRect(w*.04,y,w*.070,h*.152);
+      ctx.fillStyle="#ffffff";ctx.font="800 "+Math.round(h*.040)+"px Inter,sans-serif";
+      ctx.textAlign="center";ctx.fillText(num,w*.075,y+h*.077);
+      ctx.textAlign="left";ctx.fillStyle="#29434b";ctx.font="700 "+Math.round(h*.046)+"px Inter,sans-serif";
+      ctx.fillText(title,w*.14,y+h*.05);
+      ctx.strokeStyle="#98aaa5";ctx.lineWidth=Math.max(1,h*.004);
+      ctx.beginPath();ctx.moveTo(w*.14,y+h*.112);ctx.lineTo(w*.91,y+h*.112);ctx.stroke();
+    });
+    ctx.fillStyle="#526665";ctx.font="600 "+Math.round(h*.039)+"px Inter,sans-serif";
+    ctx.fillText("PLAN  ·  OWNER  ·  DUE",w*.05,h*.96);
+  });
+  today.userData.canvasSortAnchor=new THREE.Vector3(0,1.72,.079);
+  // Tier-1 briefing footprint: outside office, apart from the forklift aisle,
+  // open from the pedestrian corridor through the gap in the guardrail.
+  flat(-24.96,-2.15,4.60,2.34,y+.043,basic("#cbd4ca"));
+  outline(-24.96,-2.15,4.60,2.34,y+.047,"#e2e9df",.046);
+  groundText(-24.96,-3.07,2.38,.32,"5 MIN · DAILY HUDDLE","#45625d",y+.057);
+  // A sample shift team standing at the front-line visual board.
+  for(const [x,color] of [
+    [-26.64,"#85aba0"],[-25.78,"#b5a46d"],[-24.92,"#8eaaa9"],[-24.06,"#92aa95"]
+  ]){const p=person(x,floor,-2.28,color);p.rotation.y=0;}
+  const teamLead=person(-23.18,floor,-1.46,"#518f94");
+  teamLead.rotation.y=Math.PI;
+  sign(-25.15,floor+2.88,-.96,3.20,.32,"SHIFT START · 5 MIN",white,C.navy,Math.PI);
   function dock(x,z,num,heading=0,inner=false){
     const d=group(scene,x,floor,z);d.rotation.y=heading;
     const wide=inner?3.72:4.45;
@@ -521,10 +570,11 @@ export function makeWarehouse(canvas){
   brokenLine(33.08,6.20,9.46,.07,y+.021,lane);
   // Charging-bay access is identified by equipment icons, not road arrows.
   // White / yellow / green / red custody areas.
-  const reception=table(-22.63,floor,-2.38,3.84,1.13);
+  // Move reception desk east of the team briefing area.
+  const reception=table(-20.35,floor,-2.38,3.84,1.13);
   computer(reception,-.83,-.26);
   for(const [i,c] of [C.dark,C.steel,C.orange,C.white].entries())round(reception,.06+i*.39,1.08,.26,.23,.065,.21,.01,c);
-  sign(-22.63,floor+1.27,-1.73,2.31,.30,"СТОЛ ПРИЁМКИ");
+  sign(-20.35,floor+1.27,-1.73,2.31,.30,"СТОЛ ПРИЁМКИ");
   const printing=table(-4.13,floor,-2.79,5.02,1.13);
   printer(printing,-.9,-.15,"A4");printer(printing,.6,-.15,"ZEBRA");
   sign(-4.13,floor+1.27,-2.16,2.37,.30,"ПРИНТЕРЫ A4 + ZEBRA");
