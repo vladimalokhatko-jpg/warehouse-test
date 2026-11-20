@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=22";
-import {modelTools,buildProps,colors as C} from "./models.js?v=22";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=22";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=23";
+import {modelTools,buildProps,colors as C} from "./models.js?v=23";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=23";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -179,11 +179,12 @@ export function makeWarehouse(canvas){
   const pathSpans=[
     [-29.13,-16.80,2.45,53.60],       // continuous perimeter walkway (-43.60 to +10)
     [-24.85,4.35,6.73,1.35],          // receiving-office approach
-    [-27.56,-2.10,1.24,1.22],         // entry to SQCD huddle
-    [-20.08,-1.19,5.36,.55],          // protected access to receiving desk
-    [-17.55,-.60,.66,1.78],          // link to rear staff corridor
-    [-7.90,-.10,19.36,.54],          // corridor behind receiving and inspection pallet slots
-    [-2.42,-.96,.55,1.70],          // spur to inspection desk
+    [-27.56,-2.10,1.24,1.22],         // huddle entry from west pedestrian route
+    [-21.98,-1.14,1.56,.60],         // huddle to office's southeast corner
+    [-21.07,-.28,.78,2.20],         // short link alongside east office wall
+    [-9.00,.62,24.20,.88],          // single straight route for both desk stations
+    [-18.30,-.61,.82,1.48],        // receiving desk approach (north side)
+    [-.25,-.61,.82,1.48],          // inspection desk approach (north side)
     [-26.29,-21.38,4.16,1.16],      // direct stair access from perimeter route
     [-26.53,-28.15,3.20,1.14],        // forklift-parking access
     [-4.60,-35.36,49.10,1.24],        // rear walkway to chemical personnel door
@@ -228,8 +229,9 @@ export function makeWarehouse(canvas){
     floorSymbol("pedestrian",x,-35.36,.87,Math.PI/2);
   for(const [x,z] of [[-24.45,4.35],[-26.44,-28.15],[-26.10,-21.38]])
     floorSymbol("pedestrian",x,z,.56,Math.PI/2);
-  for(const [x,z] of [[-20.10,-1.19],[-14.20,-.10],[-8.70,-.10],[-3.20,-.10],[-2.42,-1.10]])
-    floorSymbol("pedestrian",x,z,.39,Math.PI/2);
+  // Icons only on actual walkable surfaces, not under the workstations.
+  for(const [x,z] of [[-21.05,-.40],[-18.30,-.73],[-15.20,.62],[-9.20,.62],[-3.20,.62],[-.25,-.73]])
+    floorSymbol("pedestrian",x,z,.38,Math.PI/2);
 
   // Aisles (horizontal): evenly spaced, sparse, centerline floor icons.
   for(const z of [-4.45,-10.41,-16.84,-25.55,-33.04])
@@ -261,9 +263,17 @@ export function makeWarehouse(canvas){
   // No dead-end into the storage staging area; open only at real destinations.
   for(const [a,b] of [[-.75,-1.40],[-2.84,-20.18],[-22.58,-26.95],[-29.36,-34.58],[-36.11,-43.35]])
     rail(-27.76,a,-27.76,b,floor,.87);
-  // Physical separation of pedestrians behind the two inbound desks.
-  for(const [a,b] of [[-17.2,-5.15],[-2.72,1.5]])
-    rail(a,.64,b,.64,floor,.66);
+  // The front pedestrian guard connects DIRECTLY to the office side wall.
+  // Aisle to the north is reserved for trucks and receiving-dock movements;
+  // forklift handling at pallets happens from the southern cross aisle.
+  rail(-21.55,1.14,3.45,1.14,floor,.88);
+  // Return at the office's rear corner; keep the SQCD employee opening clear.
+  rail(-21.55,-3.13,-21.55,-2.23,floor,.88);
+  // Back-of-desk impact rails, deliberately NOT across pallet-handling faces.
+  rail(-21.55,-3.13,-15.76,-3.13,floor,.89);
+  rail(-2.90,-3.13,3.63,-3.13,floor,.89);
+  rail(-15.76,-3.13,-15.76,-2.72,floor,.89);
+  rail(3.63,-3.13,3.63,-2.70,floor,.89);
   function guardBollard(x,z){
     const g=group(scene,x,floor,z);
     cyl(g,0,.46,0,.079,.92,C.yellow);
@@ -272,8 +282,12 @@ export function makeWarehouse(canvas){
     cyl(g,0,.035,0,.19,.070,C.steel);
     return g;
   }
-  // Receiving work area's two vulnerable corners, protected without closing access.
-  for(const z of [-3.13,-.18])guardBollard(-22.55,z);
+  // Fixed impact posts at the ends of workstation rails and office corner.
+  for(const [x,z] of [
+    [-21.55,-3.13],[-15.76,-3.13],
+    [-2.90,-3.13],[3.63,-3.13],
+    [-21.55,1.14],[3.45,1.14]
+  ])guardBollard(x,z);
   // West of Putaway Staging: no pallet storage and no pedestrian entrance.
   for(const z of [-5.82,-9.09])guardBollard(-25.49,z);
   rail(-25.49,-6.00,-25.49,-8.90,floor,.69);
@@ -622,31 +636,31 @@ export function makeWarehouse(canvas){
   // Charging-bay access is identified by equipment icons, not road arrows.
   // Two compact workstations for the receiving row; no furniture in
   // the putaway or quarantine zones. Equipment belongs to its process area.
-  const reception=table(-20.35,floor,-2.38,3.84,1.13);
+  const reception=table(-18.30,floor,-1.92,3.84,1.13);
   computer(reception,-1.00,-.26);
   printer(reception,.25,-.26,"ZEBRA");
   printer(reception,1.10,-.26,"A4");
   box(reception,.18,1.095,.34,.22,.063,.11,C.dark);      // scanner cradle
   box(reception,.38,1.105,.33,.08,.091,.18,C.steel);    // handheld scanner
-  sign(-20.35,floor+1.28,-1.71,2.40,.29,"RECEIVING DESK");
-  const scale=round(scene,-15.96,floor+.056,-2.43,1.35,.112,1.22,.036,C.gray);
+  sign(-18.30,floor+1.28,-1.25,2.40,.29,"RECEIVING DESK");
+  const scale=round(scene,-14.42,floor+.056,-1.92,1.35,.112,1.22,.036,C.gray);
   scale.userData.canvasLayer=3;
-  groundText(-15.96,-1.69,1.08,.22,"SCALE",ink,y+.048);
+  groundText(-14.42,-1.15,1.08,.22,"SCALE",ink,y+.048);
 
   // The inspector works within INSPECTION, not on the opposite side of the aisle.
-  const inspector=table(-.32,floor,-2.33,3.50,1.10);
+  const inspector=table(-.25,floor,-1.92,3.50,1.10);
   computer(inspector,-.87,-.25);
   lamp(inspector,1.14,-.22);
   box(inspector,.34,1.08,.20,.59,.037,.28,C.gray); // specimen tray
   for(const xx of [.16,.36,.56])box(inspector,xx,1.11,.20,.070,.048,.18,C.steel);
-  sign(-.32,floor+1.27,-1.67,2.43,.29,"INSPECTION DESK");
-  const toolCabinet=round(scene,2.55,floor+.67,-2.32,1.14,1.31,.63,.055,C.steel);
+  sign(-.25,floor+1.27,-1.25,2.43,.29,"INSPECTION DESK");
+  const toolCabinet=round(scene,2.62,floor+.67,-2.32,1.14,1.31,.63,.055,C.steel);
   toolCabinet.userData.canvasLayer=3;
-  for(const xx of [2.27,2.83]){
+  for(const xx of [2.34,2.90]){
     box(scene,xx,floor+.68,-1.992,.49,1.12,.036,"#aabcb8");
     box(scene,xx+.17,floor+.70,-1.970,.022,.10,.035,C.dark);
   }
-  sign(2.55,floor+1.42,-1.95,1.30,.18,"MEASURING TOOLS",white,C.navy);
+  sign(2.62,floor+1.42,-1.95,1.30,.18,"MEASURING TOOLS",white,C.navy);
 
   // Slots use invented names for the teaching model, not a corporate WMS code.
   // Only a few sample pallets show how these areas are used.

@@ -42,6 +42,16 @@ The quarantine gate can be opened and closed using the **Open Gate** / **Close G
 button; this is a classroom model, not an approved industrial traffic plan.
 The inbound workstation access is marked behind pallet positions.
 
+## Warehouse v23 — Protected operator stations
+
+- Both Receiving and Inspection workstations are set back from the active
+  forklift cross-aisle, with impact guardrails along the traffic-facing edge.
+- The protected pedestrian corridor begins at the exterior office wall and
+  runs straight behind both inbound desks. Each has one short, direct entrance.
+- Pallet positions remain accessible from the independent southern forklift aisle.
+- Guardrail ends have protective bollards. This is a teaching layout, not an
+  approved real-world traffic plan.
+
 ## Публичная версия
 
 https://vladimalokhatko-jpg.github.io/warehouse-test/

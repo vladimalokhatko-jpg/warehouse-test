@@ -73,12 +73,12 @@ export const groups=[
     [6,"Forklift Parking", [10.55,16.12,5.99,9.60],"#b4c0b9","Выделенное парковочное место погрузчика справа от второго дока, вне проезда."],
     [7,"Reach Truck Parking", [16.22,21.70,5.99,9.60],"#b4c0b9","Парковка ричтрака в единой линии с погрузчиком, без пересечения с правым транспортным коридором."],
     [8,"Pallet Jack Parking",[-24.10,-18.40,6.07,9.60],"#b4c0b9","Две ручные гидравлические тележки в компактном общем парковочном кармане слева от первого дока."],
-    [9,"Pedestrian Walkway",[-31,-27.2,-43.8,10.8],"#58a793","Main pedestrian route with protected branches to the huddle, two inbound workstations and mezzanine stairs; no through-route into pallet staging."],
+    [9,"Pedestrian Walkway",[-31,-27.2,-43.8,10.8],"#58a793","West perimeter pedestrian lane with office/huddle access to a protected corridor for two workstations; forklift traffic is separated by fixed rails."],
     [10,"Forklift Access Aisle",[-21.2,26.0,1.18,5.59],"#d5a352","Свободная зона движения погрузчиков от ворот приёмки к основным складским проездам. Размещение паллет, буферные ячейки и хранение не предусмотрены."],
   ]},
   {title:"Приёмка и контроль",zones:[
-    [11,"Receiving",[-22.40,-3.55,-3.25,.25],"#c8dce4","Receiving desk, floor scale and three inbound pallet positions; material is identified, counted and labelled before further routing."],
-    [12,"Inspection",[-2.90,20.05,-3.25,.25],"#e9dfca","Inspection workstation, compact measurement cabinet and four pallet positions, used only when inspection is required."],
+    [11,"Receiving",[-22.40,-3.55,-3.25,.25],"#c8dce4","Guarded receiving desk and scale; pallet locations are handled by forklifts from the south cross-aisle, without entering the staff walkway."],
+    [12,"Inspection",[-2.90,20.05,-3.25,.25],"#e9dfca","Guarded inspection workstation and compact measurement cabinet; forklifts access the four pallet slots from the separate south aisle."],
     [13,"Putaway Staging",[-25.35,-4.50,-9.30,-5.60],"#d3e2d5","Short-term, released pallet positions before movement to storage. No desks or other equipment inside the staging area."],
     [14,"Quarantine",[-3.75,20.10,-9.30,-5.60],"#d9d5d2","Fenced holding area with opening-and-closing inward swing gate; keep access and gate sweep free of stored material."],
   ]},
@@ -137,11 +137,11 @@ export const zoneCameras={
   ],
   11:[
     shot("Receiving pallets",-10.1,-1.56,1.78,.34,.66,22.0),
-    shot("Receiving workstation",-19.0,-2.15,1.95,.33,.61,10.2),
+    shot("Protected receiving desk",-18.30,-1.92,1.95,.33,.61,10.2),
   ],
   12:[
     shot("Inspection pallets",11.5,-1.60,1.78,.39,.65,22.0),
-    shot("Inspection workstation",.25,-2.12,1.99,.30,.61,10.7),
+    shot("Protected inspection desk",-.25,-1.92,1.99,.30,.61,10.7),
   ],
   13:[
     shot("Putaway staging",-15.1,-7.42,1.76,.37,.67,23.0),
