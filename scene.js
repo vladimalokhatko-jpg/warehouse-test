@@ -639,7 +639,7 @@ export function makeWarehouse(canvas){
       box(scene,x+offset,floor+1.06,1.14,.060,.42,.066,C.steel);
       box(scene,x+offset,floor+1.25,1.14,.14,.06,.09,accent);
     }
-    sign(x,floor+1.24,1.14,2.60,.36,textValue,white,C.navy,Math.PI);
+    sign(x,floor+1.24,1.14,2.60,.36,textValue,white,C.navy,0);
     box(scene,x,floor+1.01,1.14,2.66,.045,.076,accent);
   }
 
