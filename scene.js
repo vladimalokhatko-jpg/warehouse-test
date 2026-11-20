@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=20";
-import {modelTools,buildProps,colors as C} from "./models.js?v=20";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=20";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=21";
+import {modelTools,buildProps,colors as C} from "./models.js?v=21";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=21";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -9,7 +9,15 @@ export function makeWarehouse(canvas){
   const {box,round,cyl,group,label,graphic,flat}=tools;
   const {post,rail,pallet,forklift,reachTruck,trolley,person,table,computer,printer,lamp}=buildProps(tools,scene);
   const {left,right,front,back}=shell;
-  const labels={5:"ЗАРЯДНАЯ",11:"ПРИЁМКА / RECEIVING",12:"ИНСПЕКЦИЯ / INSPECTION",13:"К РАЗМЕЩЕНИЮ / PUTAWAY",14:"КАРАНТИН / HOLD",15:"ПАЛЛЕТНЫЕ СТЕЛЛАЖИ",16:"ТРУБЫ",17:"МЕЗОНИН",18:"КОМПЛЕКТАЦИЯ И УПАКОВКА",19:"УПАКОВОЧНЫЕ МАТЕРИАЛЫ",20:"СТОЯНКА ТЕХНИКИ",21:"ОТГРУЗКА",22:"СЛОМАННЫЕ ДЕТАЛИ",23:"ХИМИЧЕСКИЕ МАТЕРИАЛЫ"};
+  // English names are generic warehouse functions, not proprietary status codes.
+  const labels={
+    5:"BATTERY CHARGING",11:"RECEIVING",12:"INSPECTION",
+    13:"PUTAWAY STAGING",14:"QUARANTINE",
+    15:"PALLET RACKING",16:"LONG MATERIALS",17:"MEZZANINE",
+    18:"KITTING & PACKING",19:"PACKING SUPPLIES",
+    20:"EQUIPMENT PARKING",21:"DISPATCH STAGING",
+    22:"DAMAGED PARTS",23:"CHEMICAL STORAGE"
+  };
   const ink="#334a52", concrete="#c5ceca", normalFloor="#bcc6c4", white="#f7f0dd";
   const lane="#d7ae62", path="#55ae79", deck="#aab9b8", wall="#a9bdbe";
   const y=floor+.01;
@@ -90,10 +98,10 @@ export function makeWarehouse(canvas){
       flat(x+(vertical?0:w*along),z+(vertical?d*along:0),vertical?w:w/pieces*.58,vertical?d/pieces*.58:d,elevation,color);
     }
   }
-  function bays(x,z,columns,spacing,depth=1.8,prefix=""){
+  function bays(x,z,columns,spacing,depth=1.8,prefix="",markColor="#819793"){
     for(let i=0;i<columns;i++){
       const cx=x+(i-(columns-1)/2)*spacing;
-      outline(cx,z,spacing*.83,depth,y+.022,"#819793",.037);
+      outline(cx,z,spacing*.83,depth,y+.033,markColor,.045);
       if(prefix)groundText(cx,z+depth*.41,spacing*.68,.29,prefix+String(i+1).padStart(2,"0"));
     }
   }
@@ -171,7 +179,7 @@ export function makeWarehouse(canvas){
   const pathSpans=[
     [-29.13,-16.80,2.45,53.60],       // continuous perimeter walkway (-43.60 to +10)
     [-24.85,4.35,6.73,1.35],          // receiving-office approach
-    [-25.75,-6.43,4.95,1.30],         // inspection access
+    [-26.64,-6.43,2.55,1.30],         // safe access stops at staging edge, not over pallet bays
     [-27.56,-2.10,1.24,1.22],         // pedestrian entry to morning huddle
     [-26.53,-28.15,3.20,1.14],        // forklift-parking access
     [-4.60,-35.36,49.10,1.24],        // rear walkway to chemical personnel door
@@ -259,16 +267,30 @@ export function makeWarehouse(canvas){
   cyl(mirror,0,2.32,.132,.195,.04,"#9bc2c6").rotation.x=Math.PI/2;
   sign(22.0,floor+1.48,-15.75,.43,.36,"5",ink,white);
 
-  // Functional, public-domain warehouse descriptions with neutral floor colours.
-  const genericInbound=new Set([11,12,13,14]);
+  // Two aligned inbound rows:
+  // DOCKS -> RECEIVING | INSPECTION -> (cross aisle)
+  //           PUTAWAY STAGING | gated QUARANTINE -> STORAGE
+  // Muted distinct accents visually separate functions, not warehouse statuses.
+  const inboundAccents={
+    11:{edge:"#628ea1",title:"#315d6f"},
+    12:{edge:"#ac9162",title:"#795e34"},
+    13:{edge:"#6f9980",title:"#406d50"},
+    14:{edge:"#77737a",title:"#55545b"}
+  };
   for(const zone of zones){
     const [x,z,w,d]=boundsBox(zone.bounds);
     if(![1,2,3,4,5,9,10].includes(zone.id)){
-      const neutral=genericInbound.has(zone.id);
-      flat(x,z,w,d,y+.012,basic(zone.color,neutral ? .79 : 1));
-      outline(x,z,w,d,y+.018,neutral ? "#829694" : white,neutral ? .050 : .055);
+      const accent=inboundAccents[zone.id];
+      flat(x,z,w,d,y+.012,basic(zone.color,accent ? .90 : 1));
+      outline(x,z,w,d,y+.019,accent ? accent.edge : white,accent ? .085 : .055);
       const title=labels[zone.id];
-      if(title)groundText(x,z+d/2-.25,Math.min(w*.92,title.length*.268),.36,title,neutral ? "#3c5553" : ink,y+.050);
+      if(accent){
+        // One narrow header strip with enough contrast for an overhead camera.
+        flat(x,z+d/2-.225,w-.25,.33,y+.028,basic("#f0f0e9",.93));
+        groundText(x,z+d/2-.225,Math.min(w*.83,Math.max(3.0,title.length*.26)),.28,title,accent.title,y+.052);
+      }else if(title){
+        groundText(x,z+d/2-.25,Math.min(w*.92,title.length*.268),.36,title,ink,y+.050);
+      }
     }
   }
   // Entrance, receiving office and numbered dock bays.
@@ -571,49 +593,65 @@ export function makeWarehouse(canvas){
   }
   brokenLine(33.08,6.20,9.46,.07,y+.021,lane);
   // Charging-bay access is identified by equipment icons, not road arrows.
-  // Generic inbound functions: receiving, inspection, putaway staging, quarantine.
-  // Move reception desk east of the team briefing area.
+  // Two compact workstations for the receiving row; no furniture in
+  // the putaway or quarantine zones. Equipment belongs to its process area.
   const reception=table(-20.35,floor,-2.38,3.84,1.13);
-  computer(reception,-.83,-.26);
-  for(const [i,c] of [C.dark,C.steel,C.orange,C.white].entries())round(reception,.06+i*.39,1.08,.26,.23,.065,.21,.01,c);
-  sign(-20.35,floor+1.27,-1.73,2.31,.30,"СТОЛ ПРИЁМКИ");
-  const printing=table(-4.13,floor,-2.79,5.02,1.13);
-  printer(printing,-.9,-.15,"A4");printer(printing,.6,-.15,"ZEBRA");
-  sign(-4.13,floor+1.27,-2.16,2.37,.30,"ПРИНТЕРЫ A4 + ZEBRA");
-  const toolsShelf=table(-5.92,floor,-1.48,2.26,.68);
-  for(const [i,c] of [C.dark,C.steel,C.orange].entries())box(toolsShelf,(i-1)*.55,1.09,.02,.34,.073,.29,c);
-  sign(-5.92,floor+1.15,-1.10,1.53,.25,"ИНСТРУМЕНТЫ");
-  const scale=round(scene,-15.96,floor+.058,-2.45,1.35,.114,1.25,.035,C.gray);
+  computer(reception,-1.00,-.26);
+  printer(reception,.25,-.26,"ZEBRA");
+  printer(reception,1.10,-.26,"A4");
+  box(reception,.18,1.095,.34,.22,.063,.11,C.dark);      // scanner cradle
+  box(reception,.38,1.105,.33,.08,.091,.18,C.steel);    // handheld scanner
+  sign(-20.35,floor+1.28,-1.71,2.40,.29,"RECEIVING DESK");
+  const scale=round(scene,-15.96,floor+.056,-2.43,1.35,.112,1.22,.036,C.gray);
   scale.userData.canvasLayer=3;
-  sign(-15.96,floor+.24,-1.78,.67,.19,"ВЕСЫ",white,C.steel);
-  const inspector=table(-23.45,floor,-7.48,3.78,1.12);
-  computer(inspector,-.90,-.27);lamp(inspector,1.35,-.24);
-  box(inspector,.47,1.073,.21,.62,.035,.29,C.gray);
-  for(const xx of [.29,.52,.73])box(inspector,xx,1.107,.20,.082,.057,.21,C.steel);
-  sign(-23.40,floor+1.26,-6.79,2.06,.29,"СТОЛ ИНСПЕКЦИИ");
-  const cabinet=round(scene,-18.92,floor+.80,-8.00,1.72,1.56,.72,.058,C.steel);
-  cabinet.userData.canvasLayer=3;
-  for(const xx of [-19.32,-18.52])box(scene,xx,floor+.82,-7.61,.71,1.35,.045,"#abbcb8");
-  sign(-18.92,floor+1.48,-7.56,1.31,.20,"ИНСТРУМЕНТЫ",white,C.navy);
-  rail(-26.1,-9.26,-18.18,-9.26,floor,.84);
-  // Fictional area identifiers, not a standard or company-internal slot code.
-  for(const [x,z,count,spacing,code] of [
-    [9.91,-1.47,5,3.20,"IN-"],
-    [-8.80,-7.58,6,2.86,"QC-"],
-    [-15.53,-13.49,5,3.20,"ST-"],
-    [8.00,-13.52,4,4.15,"H-"]
-  ]){
-    bays(x,z,count,spacing,2.30,code);
-    for(let i=0;i<count;i++)if((i+count)%3===0)pallet(x+(i-(count-1)/2)*spacing,floor,z,i%4);
+  groundText(-15.96,-1.69,1.08,.22,"SCALE",ink,y+.048);
+
+  // The inspector works within INSPECTION, not on the opposite side of the aisle.
+  const inspector=table(-.32,floor,-2.33,3.50,1.10);
+  computer(inspector,-.87,-.25);
+  lamp(inspector,1.14,-.22);
+  box(inspector,.34,1.08,.20,.59,.037,.28,C.gray); // specimen tray
+  for(const xx of [.16,.36,.56])box(inspector,xx,1.11,.20,.070,.048,.18,C.steel);
+  sign(-.32,floor+1.27,-1.67,2.43,.29,"INSPECTION DESK");
+  const toolCabinet=round(scene,2.55,floor+.67,-2.32,1.14,1.31,.63,.055,C.steel);
+  toolCabinet.userData.canvasLayer=3;
+  for(const xx of [2.27,2.83]){
+    box(scene,xx,floor+.68,-1.992,.49,1.12,.036,"#aabcb8");
+    box(scene,xx+.17,floor+.70,-1.970,.022,.10,.035,C.dark);
   }
+  sign(2.55,floor+1.42,-1.95,1.30,.18,"MEASURING TOOLS",white,C.navy);
+
+  // Slots use invented names for the teaching model, not a corporate WMS code.
+  // Only a few sample pallets show how these areas are used.
+  const inboundSlots=[
+    {id:11,x:-8.35,z:-1.47,count:3,step:3.00,depth:2.10,code:"REC-",loaded:[1]},
+    {id:12,x:12.00,z:-1.47,count:4,step:3.25,depth:2.10,code:"INS-",loaded:[1]},
+    {id:13,x:-15.10,z:-7.45,count:5,step:3.40,depth:2.05,code:"PUT-",loaded:[0,3]},
+    {id:14,x:7.60,z:-7.45,count:4,step:4.10,depth:2.05,code:"Q-",loaded:[2]}
+  ];
+  for(const cfg of inboundSlots){
+    const color=inboundAccents[cfg.id].edge;
+    bays(cfg.x,cfg.z,cfg.count,cfg.step,cfg.depth,cfg.code,color);
+    for(const i of cfg.loaded)
+      pallet(cfg.x+(i-(cfg.count-1)/2)*cfg.step,floor,cfg.z,i%4,true);
+  }
+
+  // Isolated quarantine fence on the second row. The entry is on the
+  // forklift-aisle side, to the right of the last pallet position.
+  // Keep the 3.2-unit access opening free of posts, signs, and stored loads.
+  const q={left:-3.75,right:20.10,near:-5.60,far:-9.30,gate0:16.20,gate1:19.40};
+  const fenceColor="#66747b";
   for(const [a,b] of [
-    [[-3.85,-15.45],[19.95,-15.45]],[[-3.85,-15.45],[-3.85,-11.54]],[[19.95,-15.45],[19.95,-11.54]],
-    [[-3.85,-11.54],[5.45,-11.54]],[[8.1,-11.54],[19.95,-11.54]],
-  ])fence(...a,...b,C.steel);
-  fence(5.64,-11.56,6.72,-11.56,C.steel);
-  fence(6.88,-11.56,8.02,-11.56,C.steel);
-  sign(7.02,floor+1.26,-11.44,3.08,.38,"QUARANTINE / HOLD",white,C.navy);
-  post(5.55,floor,-11.45,.88,.073);post(8.02,floor,-11.45,.88,.073);
+    [[q.left,q.far],[q.right,q.far]],
+    [[q.left,q.far],[q.left,q.near]],
+    [[q.right,q.far],[q.right,q.near]],
+    [[q.left,q.near],[q.gate0,q.near]],
+    [[q.gate1,q.near],[q.right,q.near]]
+  ])fence(...a,...b,fenceColor);
+  // Guarded, clearly indicated side opening; nothing hangs across the gate.
+  for(const xx of [q.gate0,q.gate1])post(xx,floor,q.near,.98,.07);
+  sign(12.70,floor+1.48,-5.48,3.02,.33,"QUARANTINE",white,C.navy);
+
   // Main storage. Two groups of racks, plus a two-level mezzanine and a cantilever.
   function rack(x,z,w,d,title,kind="standard"){
     const std=kind==="standard",broken=kind==="broken",levels=[.41,1.57,2.66];

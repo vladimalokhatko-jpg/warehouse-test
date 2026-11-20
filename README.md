@@ -1,27 +1,38 @@
 # Warehouse — интерактивная учебная 3D-модель склада
 
-Это публичная демонстрационная модель на Three.js, а не проект или процесс конкретной компании. Схема служит для обучения и не является обязательным отраслевым стандартом.
+Проект создан для обучения и демонстрации складских процессов. **Не является проектной документацией, корпоративной схемой или отраслевым обязательным стандартом.**
 
-## Функциональные участки
+## Зоны приёмки: Warehouse v21
 
-- **Receiving / Приёмка** — поступление и проверка количества и документов.
-- **Inspection / Входной контроль** — проверка состояния и качества, если она необходима.
-- **Putaway Staging / К размещению** — временная площадка перед размещением.
-- **Quarantine / Карантин** — отдельный контролируемый участок для спорных или повреждённых материалов.
+За основу общей логики взята открытая схема **U-flow**: приемка и отгрузка расположены с одной стороны склада. Четыре функциональных участка приёмки расположены в две параллельные линии с отделёнными от них проездами техники:
 
-Применяется нейтральный цвет пола. Буквенные коды IN, QC, ST, H являются учебными обозначениями и не связаны с какой-либо организацией.
+```text
+          RECEIVING DOCKS
+      CLEAR FORKLIFT ACCESS
+   RECEIVING       |   INSPECTION (if required)
+        MAIN FORKLIFT CROSS AISLE
+   PUTAWAY STAGING |   QUARANTINE (fenced gate)
+          STORAGE ACCESS
+```
 
-## Использованные открытые источники
+- **Receiving:** один стол для оператора, сканер, принтеры на этом же столе, напольные весы.
+- **Inspection:** отдельный инспекционный стол, компактный шкаф измерительных средств.
+- **Putaway Staging:** временное ожидание размещения; дополнительных столов нет.
+- **Quarantine:** ограждённая площадка с отдельным контролируемым входом; дополнительных столов нет.
 
-- [WHO — Warehouse and Stock Management](https://emanual.who.int/p17new/s09/Pages/9-3-4-Warehouse-and-Stock-Management.aspx)
-- [British Red Cross — Managing a Warehouse](https://logistics-manual.redcross.org.uk/manual/warehousing/managing-a-warehouse/)
-- [British Red Cross — Setting up a Warehouse](https://logistics-manual.redcross.org.uk/manual/warehousing/setting-up-a-warehouse/)
-- [HSE — Separating pedestrians and vehicles](https://www.hse.gov.uk/workplacetransport/separating.htm)
+Коды **REC, INS, PUT, Q** придуманы для учебной сцены и не представляют собой стандарт предприятия. Цветовые акценты различают функциональные площади, но не обозначают корпоративные статусы материалов.
 
-Габариты, пожарная безопасность и маршруты требуют отдельной оценки для реального склада.
+### Общедоступные референсы
 
-## Просмотр
+- [British Red Cross Logistics Manual — Setting up a warehouse](https://logistics-manual.redcross.org.uk/manual/warehousing/setting-up-a-warehouse/) — функции приёмки, хранения и карантина, варианты U-flow и through-flow.
+- [Quality Material Handling — Receiving Area Layout](https://www.qmhinc.com/receiving-area-layout/) — разделение разгрузки, инспекции и staging.
+- [UK HSE — Separating pedestrians and vehicles](https://www.hse.gov.uk/workplacetransport/separating.htm) — отдельные безопасные маршруты и защитные ограждения.
+- [APICS / ASCM — Strategic Management of Resources](https://learnhrm.hclspdev.com/assets/ascm-common/files/cltd1/pdf/APICS_CLTD_2025_Mod4.pdf) — открытый учебный пример U-flow.
+
+Эта сцена условная: окончательные размеры проходов, зоны работы погрузчика, пожарные требования, доступность выходов и организация карантина требуют отдельной проверки для конкретного помещения и оборудования.
+
+## Публичная версия
 
 https://vladimalokhatko-jpg.github.io/warehouse-test/
 
-Репозиторий публичный. Не публикуйте здесь конфиденциальные документы, планы предприятий или персональные данные.
+Не загружайте в публичный репозиторий конфиденциальную планировку предприятия или внутренние документы.
