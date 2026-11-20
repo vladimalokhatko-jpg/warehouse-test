@@ -124,40 +124,65 @@ export function buildProps(tools, scene){
   }
   function trolley(x,y,z,powered){
     const g=group(scene,x,y,z);
-    const color=powered?"#598f85":"#d88743";
-    // Two low, long fork blades with distinct rounded toes and tandem rollers.
-    round(g,0,.245,-.24,.59,.37,.65,.11,color);
-    round(g,0,.40,-.32,.43,.16,.44,.07,C.steel);
-    for(const xx of [-.235,.235]){
-      round(g,xx,.113,.59,.145,.11,1.42,.034,color);
-      round(g,xx,.105,1.29,.14,.06,.17,.023,C.steel);
-      wheel(g,xx,.085,1.14,.076,.072);
-      box(g,xx,.165,-.06,.165,.10,.32,C.steel);
-    }
-    // Exposed pump cylinder, steering linkage and castor wheels.
-    cyl(g,0,.45,-.29,.102,.32,"#a7afb0");
-    cyl(g,0,.63,-.29,.044,.14,C.steel);
-    round(g,0,.30,-.52,.42,.17,.22,.04,C.dark);
-    for(const xx of [-.27,.27]){
-      wheel(g,xx,.134,-.53,.132,.08);
-    }
-    // Tilted ergonomic tiller with a transverse rubberized hand grip.
-    const stem=box(g,0,.84,-.68,.066,.93,.073,C.steel);
-    stem.rotation.x=-.31;
-    round(g,0,1.31,-.83,.53,.092,.12,.045,C.dark);
-    for(const xx of [-.21,.21])
-      round(g,xx,1.28,-.80,.09,.09,.14,.022,C.dark);
     if(powered){
-      // Compact electric stacker, not merely a colored hand pallet truck.
-      round(g,0,.47,-.60,.56,.44,.48,.09,"#47796e");
-      for(const xx of [-.26,.26]){
-        box(g,xx,1.15,-.55,.075,1.75,.088,C.steel);
+      // Retain the established powered stacker appearance unchanged.
+      const color="#598f85";
+      round(g,0,.245,-.24,.59,.37,.65,.11,color);
+      round(g,0,.40,-.32,.43,.16,.44,.07,C.steel);
+      for(const xx of [-.235,.235]){
+        round(g,xx,.113,.59,.145,.11,1.42,.034,color);
+        round(g,xx,.105,1.29,.14,.06,.17,.023,C.steel);
+        wheel(g,xx,.085,1.14,.076,.072);
+        box(g,xx,.165,-.06,.165,.10,.32,C.steel);
       }
+      cyl(g,0,.45,-.29,.102,.32,"#a7afb0");
+      cyl(g,0,.63,-.29,.044,.14,C.steel);
+      round(g,0,.30,-.52,.42,.17,.22,.04,C.dark);
+      for(const xx of [-.27,.27])wheel(g,xx,.134,-.53,.132,.08);
+      const stem=box(g,0,.84,-.68,.066,.93,.073,C.steel);
+      stem.rotation.x=-.31;
+      round(g,0,1.31,-.83,.53,.092,.12,.045,C.dark);
+      for(const xx of [-.21,.21])round(g,xx,1.28,-.80,.09,.09,.14,.022,C.dark);
+      round(g,0,.47,-.60,.56,.44,.48,.09,"#47796e");
+      for(const xx of [-.26,.26])box(g,xx,1.15,-.55,.075,1.75,.088,C.steel);
       box(g,0,1.96,-.55,.63,.065,.12,C.navy);
       box(g,0,.94,-.52,.55,.09,.13,C.yellow);
       box(g,0,.56,-.82,.32,.30,.29,C.dark);
       cyl(g,.18,.87,-.88,.057,.05,C.orange);
+      return g;
     }
+
+    // Manual pallet jack: preserve the original orange, rounded compact profile.
+    // Realistic proportions without tall exposed cylinders or giant handle blocks.
+    const orange=C.orange;
+    round(g,0,.245,-.27,.57,.29,.59,.105,orange);  // low, compact pump housing
+    round(g,0,.355,-.36,.44,.095,.40,.055,orange); // pressed top cover
+    box(g,0,.218,.02,.43,.082,.24,C.steel);        // integral fork bridge
+    for(const xx of [-.220,.220]){
+      // Slender welded forks with subtle curved tips.
+      round(g,xx,.136,.73,.150,.103,1.51,.032,orange);
+      round(g,xx,.127,1.47,.141,.075,.22,.030,orange);
+      box(g,xx,.079,.70,.070,.017,.93,C.steel);  // reinforced lower flange
+      wheel(g,xx,.077,1.43,.066,.055);           // small load roller
+    }
+    // Rear steering wheels sit under the pump rather than beside oversized blocks.
+    for(const xx of [-.250,.250]){
+      wheel(g,xx,.132,-.48,.132,.074);
+      cyl(g,xx,.245,-.48,.055,.060,C.steel);
+    }
+    // A small integrated hydraulic piston -- not a free-standing jack.
+    cyl(g,0,.405,-.31,.083,.165,"#627d82");
+    cyl(g,0,.505,-.31,.038,.065,C.steel);
+    round(g,0,.47,-.40,.19,.065,.16,.027,C.dark);
+
+    // Angled tiller and a recognizable narrow D-shaped rubber grip.
+    const shaft=cyl(g,0,.84,-.75,.041,1.00,C.steel);
+    shaft.rotation.x=-.49;
+    round(g,0,1.27,-.985,.44,.083,.12,.037,C.dark);
+    for(const xx of [-.185,.185])
+      round(g,xx,1.19,-.985,.075,.20,.10,.030,C.dark);
+    round(g,0,1.10,-.985,.31,.058,.08,.025,C.dark);
+    box(g,0,.60,-.47,.13,.045,.105,C.orange); // release lever
     return g;
   }
   function truck(x,z,{open=false,color="#617d85",heading=0}={}){

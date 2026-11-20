@@ -1,8 +1,7 @@
 import * as THREE from "three";
-import {loadStaticGLB} from "./vendor/warehouse-glb-loader.js?v=14";
-import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=14";
-import {modelTools,buildProps,colors as C} from "./models.js?v=14";
-import {SoftwareRenderer} from "./renderer-fallback.js?v=14";
+import {floor,shell,zones,routeColors,receiving,charging,dispatch,slab} from "./layout.js?v=15";
+import {modelTools,buildProps,colors as C} from "./models.js?v=15";
+import {SoftwareRenderer} from "./renderer-fallback.js?v=15";
 
 export function makeWarehouse(canvas){
   const scene=new THREE.Scene();
@@ -459,24 +458,11 @@ export function makeWarehouse(canvas){
   const stacker=trolley(receiving.stacker,floor,7.51,true);stacker.rotation.y=Math.PI;
   for(const xx of [-.29,.29])box(stacker,xx,1.06,.22,.074,1.91,.10,C.steel);
   box(stacker,0,1.98,.22,.63,.055,.093,C.steel);
-  // Compare a real GLB pallet jack with the adjacent procedural trolley.
-  let fallbackJack;
+  // Two manual pallet trucks: retained as compact procedural models.
   for(const x of [-22.06,-20.05]){
     outline(x,7.60,1.28,2.50,y+.023,white,.047);
-    const jack=trolley(x,floor,7.92,false);
-    jack.rotation.y=Math.PI;
-    if(x===-22.06)fallbackJack=jack;
+    trolley(x,floor,7.92,false).rotation.y=Math.PI;
   }
-  const glbReady=loadStaticGLB("./models/pallet-jack-industrial.glb?v=14")
-    .then(jack=>{
-      jack.position.set(-22.06,floor,7.92);
-      jack.rotation.y=Math.PI;
-      scene.add(jack);
-      if(fallbackJack)scene.remove(fallbackJack);
-      scene.userData.glbLoaded=true;
-    })
-    .catch(error=>{console.warn("GLB unavailable, using original jack",error);scene.userData.glbLoaded=false;});
-  scene.userData.pendingAssetLoads=[glbReady];
   bays(-3.80,2.42,6,3.90,1.74,"D");
   pallet(-9.65,floor,2.42,1);pallet(2.05,floor,2.42,3);
   // Side charging room and equipment.

@@ -8,7 +8,7 @@
 <meta name="description" content="Интерактивная 3D-схема склада, 23 позиции и маршруты техники и пешеходов.">
 <link rel="stylesheet" href="./style.css?v=11">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
-<script type="module" src="./main.js?v=14.1"></script>
+<script type="module" src="./main.js?v=15"></script>
 </head>
 <body>
 <main>
@@ -22,7 +22,7 @@
         <div class="zoom" role="group" aria-label="Масштаб">
           <button id="out" type="button" aria-label="Отдалить">−</button>
           <button id="reset" type="button" aria-label="Показать весь склад" title="Показать весь склад">Весь склад</button>
-          <button id="jack" type="button" aria-label="Рассмотреть GLB-модель рохли у приёмки" title="Сравнить 3D-модели рохлей">Рохля GLB</button>
+          <button id="jack" type="button" aria-label="Рассмотреть рохли у приёмки" title="Рохли у приёмки">Рохли</button>
           <button id="in" type="button" aria-label="Приблизить">+</button>
           <button id="full" type="button" class="full" aria-label="Полноэкранный режим" title="Полноэкранный режим"><span aria-hidden="true"></span></button>
         </div>
@@ -30,7 +30,7 @@
       <div class="stage" id="stage"><canvas id="warehouse" tabindex="0" aria-label="Свободный просмотр склада" aria-describedby="hint"></canvas></div>
       <div class="footer">
         <p class="camera-tip" id="hint"><span class="desktop-help">Левая кнопка — поворот · Правая кнопка или Shift + перетаскивание — перемещение · Колесо — приближение · Двойной щелчок — к объекту</span><span class="touch-help">Один палец — поворот · Два пальца — перемещение и приближение</span></p>
-        <p class="model-note">Редакция 14.1 · Рохля GLB · Размеры условные</p>
+        <p class="model-note">Редакция 15 · Рохли (компактные) · Размеры условные</p>
       </div>
       <p class="error" id="error" role="alert" hidden>Не удалось открыть 3D-сцену. Обнови страницу.</p>
     </section>

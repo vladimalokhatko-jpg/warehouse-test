@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import {floor,presets,fitWarehouse} from "./layout.js?v=14";
-import {makeWarehouse} from "./scene.js?v=14";
+import {floor,presets,fitWarehouse} from "./layout.js?v=15";
+import {makeWarehouse} from "./scene.js?v=15";
 
 const byId=id=>document.getElementById(id);
 const stage=byId("stage"),canvas=byId("warehouse");
@@ -36,7 +36,6 @@ async function run(){
     renderer.render(scene,camera);
   }
   function schedule(){if(!frame)frame=requestAnimationFrame(render);}
-  for(const pending of scene.userData.pendingAssetLoads||[])pending.then(schedule);
   function startNavigation(){updateCamera();fit=false;}
   function setRay(clientX,clientY){
     updateCamera();
@@ -80,7 +79,7 @@ async function run(){
     fit=true;
     schedule();
   }
-  function viewGLBJack(){
+  function viewPalletJacks(){
     Object.assign(pose,{x:-21.00,y:floor+.62,z:7.70,az:.33,el:.56,distance:8.9,fov:43});
     fit=false;
     schedule();
@@ -154,7 +153,7 @@ async function run(){
   byId("out").addEventListener("click",()=>zoom(1/.80));
   byId("in").addEventListener("click",()=>zoom(.80));
   byId("reset").addEventListener("click",reset);
-  byId("jack").addEventListener("click",viewGLBJack);
+  byId("jack").addEventListener("click",viewPalletJacks);
   byId("full").hidden=!stage.requestFullscreen;
   byId("full").addEventListener("click",()=>{
     const operation=document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen();
